@@ -18,9 +18,8 @@
 import { initializeRelayerSDK } from '../utils/relayer-sdk';
 import { ethers } from 'ethers';
 
-// ABI of the RockPaperScissors contract
 const contractABI = [
-  'function createGame(address inputChoice, bytes calldata inputProof) external',
+  'function createGame(bytes32 inputChoice, bytes calldata inputProof) external',
   'event GameCreated(uint256 indexed gameId, address indexed player1)',
 ];
 
@@ -34,7 +33,7 @@ export default {
       userAddress: null,
       choice: '',
       gameId: null,
-      contractAddress: '0xf657c9B0fB564618124C5a9ECd3C8c89F7bc40cC', // Replace with your deployed contract address
+      contractAddress: '0xf657c9B0fB564618124C5a9ECd3C8c89F7bc40cC', // thay bằng địa chỉ contract thật của bạn
     };
   },
   methods: {
@@ -60,43 +59,53 @@ export default {
         this.message = 'SDK not initialized, no choice selected, or no user address!';
         return;
       }
+
       if (!ethers.isAddress(this.contractAddress)) {
         this.message = 'Invalid contract address!';
         return;
       }
+
       try {
-        console.log('Creating game with choice:', this.choice, 'User address:', this.userAddress);
+        console.log('Encrypting choice:', this.choice);
 
-        // Encrypt the choice
-        const encryptedInput = this.instance.createEncryptedInput(
-          this.contractAddress,
-          parseInt(this.choice),
-          this.userAddress
-        );
-        console.log('Encrypted input:', encryptedInput);
+        // ✅ 1. Tạo buffer và thêm lựa chọn (1, 2 hoặc 3)
+        const buffer = this.instance.createEncryptedInput(this.contractAddress, this.userAddress);
+        buffer.add64(BigInt(parseInt(this.choice))); // Rock = 1, Paper = 2, Scissors = 3
 
-        // Get provider and signer
-        const provider = new ethers.BrowserProvider(window.ethereum); // Ethers.js v6
+        // ✅ 2. Mã hóa & gửi lên relayer
+        const encrypted = await buffer.encrypt();
+        const inputChoice = encrypted.handles;  // ✅ Lấy đúng address
+        const inputProof = encrypted.inputProof;
+
+        const toHex = (u8arr) =>
+          '0x' + [...u8arr].map(x => x.toString(16).padStart(2, '0')).join('');
+
+        const inputChoiceHex = toHex(inputChoice[0]);  // ✅ chính xác
+        const inputProofHex = toHex(inputProof);
+
+        // ✅ 3. Kết nối và gọi smart contract
+        const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         const contract = new ethers.Contract(this.contractAddress, contractABI, signer);
 
-        // Call createGame
-        const tx = await contract.createGame(
-          encryptedInput.handle,
-          encryptedInput.inputProof
-        );
+        const tx = await contract.createGame(inputChoiceHex, inputProofHex);
         console.log('Transaction sent:', tx.hash);
 
-        // Wait for confirmation
         const receipt = await tx.wait();
         console.log('Transaction confirmed:', receipt);
 
-        // Extract gameId from event
         const event = receipt.logs
-          .map((log) => contract.interface.parseLog(log))
+          .map((log) => {
+            try {
+              return contract.interface.parseLog(log);
+            } catch {
+              return null;
+            }
+          })
           .find((e) => e?.name === 'GameCreated');
+
         if (event) {
-          this.gameId = event.args.gameId.toNumber();
+          this.gameId = event.args.gameId.toString();
           this.message = `Game created successfully! ID: ${this.gameId}`;
         } else {
           this.message = 'Game created, but could not retrieve game ID';
