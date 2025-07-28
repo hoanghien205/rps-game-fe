@@ -1,148 +1,14 @@
 [
   {
-    "inputs": [],
-    "name": "DecryptionNotRequested",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "GameAlreadyJoined",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "GameNotActive",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "HandlesAlreadySavedForRequestID",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "InvalidChoice",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "InvalidKMSSignatures",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "NoHandleFoundForRequestID",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "NotPlayer",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "UnsupportedHandleType",
-    "type": "error"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "requestID",
-        "type": "uint256"
-      }
-    ],
-    "name": "DecryptionFulfilled",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "gameId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "requestID",
-        "type": "uint256"
-      }
-    ],
-    "name": "DecryptionRequested",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "gameId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "player1",
-        "type": "address"
-      }
-    ],
-    "name": "GameCreated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "gameId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "player2",
-        "type": "address"
-      }
-    ],
-    "name": "GameJoined",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "gameId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "winner",
-        "type": "address"
-      }
-    ],
-    "name": "WinnerDecided",
-    "type": "event"
-  },
-  {
     "inputs": [
       {
         "internalType": "externalEuint8",
-        "name": "inputChoice",
+        "name": "encryptedMove1",
         "type": "bytes32"
       },
       {
         "internalType": "bytes",
-        "name": "inputProof",
+        "name": "proof1",
         "type": "bytes"
       }
     ],
@@ -152,31 +18,8 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "gameId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes",
-        "name": "decryptedResult",
-        "type": "bytes"
-      },
-      {
-        "internalType": "bytes[]",
-        "name": "signatures",
-        "type": "bytes[]"
-      }
-    ],
-    "name": "determineWinner",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [],
-    "name": "gameCounter",
+    "name": "gameCount",
     "outputs": [
       {
         "internalType": "uint256",
@@ -204,7 +47,7 @@
       },
       {
         "internalType": "euint8",
-        "name": "choice1",
+        "name": "player1Move",
         "type": "bytes32"
       },
       {
@@ -214,23 +57,18 @@
       },
       {
         "internalType": "euint8",
-        "name": "choice2",
+        "name": "player2Move",
         "type": "bytes32"
       },
       {
-        "internalType": "uint256",
-        "name": "requestID",
-        "type": "uint256"
-      },
-      {
         "internalType": "bool",
-        "name": "isActive",
+        "name": "played2",
         "type": "bool"
       },
       {
-        "internalType": "address",
-        "name": "winner",
-        "type": "address"
+        "internalType": "euint8",
+        "name": "result",
+        "type": "bytes32"
       }
     ],
     "stateMutability": "view",
@@ -240,17 +78,36 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "gameId",
+        "name": "_gameId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getResult",
+    "outputs": [
+      {
+        "internalType": "euint8",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_gameId",
         "type": "uint256"
       },
       {
         "internalType": "externalEuint8",
-        "name": "inputChoice",
+        "name": "encryptedMove2",
         "type": "bytes32"
       },
       {
         "internalType": "bytes",
-        "name": "inputProof",
+        "name": "proof2",
         "type": "bytes"
       }
     ],

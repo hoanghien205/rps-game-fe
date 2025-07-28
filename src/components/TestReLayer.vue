@@ -33,7 +33,7 @@ export default {
       userAddress: null,
       choice: '',
       gameId: null,
-      contractAddress: '0xf657c9B0fB564618124C5a9ECd3C8c89F7bc40cC', // thay bằng địa chỉ contract thật của bạn
+      contractAddress: '0x55817431B6Bd9b175c0BEAa3802319A43F24FB73', // thay bằng địa chỉ contract thật của bạn
     };
   },
   methods: {
@@ -70,7 +70,7 @@ export default {
 
         // ✅ 1. Tạo buffer và thêm lựa chọn (1, 2 hoặc 3)
         const buffer = this.instance.createEncryptedInput(this.contractAddress, this.userAddress);
-        buffer.add64(BigInt(parseInt(this.choice))); // Rock = 1, Paper = 2, Scissors = 3
+        buffer.add8(BigInt(parseInt(this.choice))); // Rock = 1, Paper = 2, Scissors = 3
 
         // ✅ 2. Mã hóa & gửi lên relayer
         const encrypted = await buffer.encrypt();
