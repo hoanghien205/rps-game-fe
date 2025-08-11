@@ -45,11 +45,11 @@ Lose: Your bet goes to your opponent. -->
         <span>Faucet</span>
         <span>Leaderboard</span>
       </nav>
-      <div class="airdrop">
+      <!-- <div class="airdrop">
         <span>Weekly Airdrop</span>
         <span class="airdrop-amount">8,759.51 </span>
         <span class="airdrop-balance">140.9 </span>
-      </div>
+      </div> -->
     </header>
 
     <!-- Main Content -->
@@ -58,71 +58,88 @@ Lose: Your bet goes to your opponent. -->
         <!-- Left Panel: Game Controls -->
         <div class="game-controls">
           <h2>Rock Paper Scissors</h2>
-          <button class="play-button">Let's play!</button>
-          <div class="amount-section">
-            <label>Amount</label>
-            <input type="number" value="20" />
-            <button class="amount-btn">2x</button>
-            <button class="amount-btn">max</button>
-          </div>
-          <div class="choices-section">
-            <label>Choose side</label>
-            <div class="choices">
-              <button class="choice-btn">Rock</button>
-              <button class="choice-btn">Paper</button>
-              <button class="choice-btn">Scissors</button>
+          <!-- <button class="play-button">Let's play!</button> -->
+          <div class="game-container-2">
+            <div class="amount-section">
+
+              <div>
+                <input type="number" value="0.01" />
+                <button class="amount-btn">1x</button>
+                <button class="amount-btn">2x</button>
+                <button class="amount-btn">3x</button>
+                <button class="amount-btn">max</button>
+              </div>
+
+              <div class="choices-section">
+                <div class="choices">
+                  <button class="choice-btn" data-choice="rock">
+                    <img src="@/assets/rock.svg" alt="Rock" />
+                  </button>
+                  <button class="choice-btn" data-choice="paper">
+                    <img src="@/assets//paper.svg" alt="Rock" />
+                  </button>
+                  <button class="choice-btn" data-choice="scissors">
+                    <img src="@/assets//scissors.svg" alt="Rock" />
+                  </button>
+                </div>
+              </div>
+
+              <button class="play-btn">Play</button>
+
+              <div class="winnings">
+                <span>Your Winnings:</span>
+                <span>0 </span>
+              </div>
             </div>
-          </div>
-          <button class="play-btn">Play</button>
-          <div class="winnings">
-            <span>Your Winnings:</span>
-            <span>0 </span>
+
+
+            <div class="game-visual">
+              <img src="" alt="Rock" />
+              <span class="vs">VS</span>
+              <img src="" alt="Scissors" />
+            </div>
+
           </div>
         </div>
 
-        <!-- Center Panel: Game Visual -->
-        <div class="game-visual">
-          <img src="" alt="Rock" />
-          <span class="vs">VS</span>
-          <img src="" alt="Scissors" />
-        </div>
 
         <!-- Right Panel: Result and Recent Games -->
         <div class="game-result-history">
           <div class="game-result">
             <span>YOU WIN</span>
-            <span class="win-amount">38.8 MONAD</span>
+            <span class="win-amount">38.8 ETH</span>
           </div>
           <div class="game-history">
             <h3>Your Recent Games</h3>
             <table>
-              <tr>
-                <th>Game</th>
-                <th>Player Pick</th>
-                <th>Contract Pick</th>
-                <th>Bet</th>
-                <th>Winnings</th>
-                <th>Time</th>
-                <th>Transaction</th>
-              </tr>
-              <tr>
-                <td>RPS</td>
-                <td>Rock</td>
-                <td>Scissors</td>
-                <td>20</td>
-                <td class="win">38.8</td>
-                <td>10 Aug 16:23</td>
-                <td>Explore</td>
-              </tr>
-              <tr>
-                <td>RPS</td>
-                <td>Scissors</td>
-                <td>Scissors</td>
-                <td>20</td>
-                <td class="win">19.4</td>
-                <td>10 Aug 16:23</td>
-                <td>Explore</td>
-              </tr>
+              <thead>
+                <tr>
+                  <th>Player Pick</th>
+                  <th>Contract Pick</th>
+                  <th>Bet</th>
+                  <th>Winnings</th>
+                  <th>Time</th>
+                  <th>Transaction</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Rock</td>
+                  <td>Scissors</td>
+                  <td>20</td>
+                  <td class="win">38.8</td>
+                  <td>10 Aug 16:23</td>
+                  <td>Explore</td>
+                </tr>
+                <tr>
+                  <td>Scissors</td>
+                  <td>Scissors</td>
+                  <td>20</td>
+                  <td class="win">19.4</td>
+                  <td>10 Aug 16:23</td>
+                  <td>Explore</td>
+                </tr>
+              </tbody>
             </table>
           </div>
         </div>
@@ -159,7 +176,44 @@ Lose: Your bet goes to your opponent. -->
 
 .nav {
   display: flex;
-  gap: 15px;
+  gap: 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.nav span {
+  position: relative;
+  cursor: pointer;
+  background: linear-gradient(90deg, #2D2D44, #e52e71, #6a5acd);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: background-position 0.5s ease;
+}
+
+.nav span::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(90deg, #2D2D44, #e52e71, #6a5acd);
+  background-size: 300% 100%;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.4s ease, background-position 0.5s ease;
+  border-radius: 2px;
+}
+
+.nav span:hover {
+  background-position: 100% 0;
+}
+
+.nav span:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+  background-position: 100% 0;
 }
 
 .airdrop {
@@ -194,26 +248,25 @@ Lose: Your bet goes to your opponent. -->
   gap: 20px;
 }
 
-.game-controls, .game-history {
+.game-container-2 {
+  padding: 20px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+}
+
+.game-controls,
+.game-history {
   padding: 15px;
   background-color: #E8E8E8;
   border-radius: 5px;
 }
 
-.game-controls h2, .game-history h3 {
+.game-controls h2,
+.game-history h3 {
   text-align: center;
   margin-bottom: 15px;
-}
-
-.play-button {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
-  background-color: #1b4332;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
 }
 
 .play-btn {
@@ -224,10 +277,12 @@ Lose: Your bet goes to your opponent. -->
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  margin-top: 24px;
 }
 
 .amount-section {
   margin-bottom: 15px;
+  width: 50%;
 }
 
 .amount-section label {
@@ -238,7 +293,7 @@ Lose: Your bet goes to your opponent. -->
 .amount-section input {
   width: 100%;
   padding: 10px;
-  background-color: #2d2d44;
+  background-color: white;
   border: none;
   border-radius: 5px;
   margin-bottom: 10px;
@@ -246,7 +301,7 @@ Lose: Your bet goes to your opponent. -->
 
 .amount-btn {
   padding: 10px 20px;
-  background-color: #FFD208;
+  background-color: #2d2d44;
   color: white;
   border: none;
   border-radius: 5px;
@@ -254,9 +309,9 @@ Lose: Your bet goes to your opponent. -->
   cursor: pointer;
 }
 
-.choices-section label {
-  display: block;
-  margin-bottom: 5px;
+.choices-section {
+  margin-top: 32px;
+  margin-bottom: 16px;
 }
 
 .choices {
@@ -265,13 +320,31 @@ Lose: Your bet goes to your opponent. -->
   margin-bottom: 15px;
 }
 
+.choices {
+  display: flex;
+  gap: 48px;
+  justify-content: center;
+}
+
 .choice-btn {
-  padding: 10px 20px;
-  background-color: #1a1a2e;
-  color: white;
+  /* background: linear-gradient(145deg, #2c2c2c, #1a1a1a); */
   border: none;
-  border-radius: 5px;
+  padding: 15px;
+  border-radius: 50%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
   cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  width: 100px;
+  height: 100px;
+}
+
+.choice-btn img {
+  width: 100%;
+}
+
+.choice-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
 }
 
 .winnings {
@@ -285,6 +358,7 @@ Lose: Your bet goes to your opponent. -->
 
 .game-visual {
   text-align: center;
+  width: 50%;
 }
 
 .game-visual img {
@@ -315,7 +389,8 @@ Lose: Your bet goes to your opponent. -->
   border-collapse: collapse;
 }
 
-.game-history th, .game-history td {
+.game-history th,
+.game-history td {
   padding: 5px;
   text-align: center;
 }
@@ -327,7 +402,7 @@ Lose: Your bet goes to your opponent. -->
 
 <script>
 import { initializeRelayerSDK } from '../utils/relayer-sdk';
-import { ethers,parseEther } from 'ethers';
+import { ethers, parseEther } from 'ethers';
 import contractABI from "@/abi/RockPaperScissorsABI.json";
 
 export default {
@@ -396,7 +471,7 @@ export default {
         const contract = new ethers.Contract(this.contractAddress, contractABI, signer);
 
         const betAmount = parseEther("0.001");
-        const tx = await contract.createGame(inputChoiceHex, inputProofHex,  { value: betAmount });
+        const tx = await contract.createGame(inputChoiceHex, inputProofHex, { value: betAmount });
         console.log('Transaction sent:', tx.hash);
 
         const receipt = await tx.wait();
