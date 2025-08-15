@@ -1,20 +1,3 @@
-<!-- <template>
-  <div>
-    <h1>Rock Paper Scissors</h1>
-    <button @click="initialize" :disabled="isInitialized">Initialize SDK</button>
-    <select v-model="choice" :disabled="!isInitialized">
-      <option value="" disabled>Select Choice</option>
-      <option value="1">Rock</option>
-      <option value="2">Paper</option>
-      <option value="3">Scissors</option>
-    </select>
-    <v-btn color="primary" @click="createGame" :disabled="!isInitialized || !choice">Create Game</v-btn>
-    <v-btn color="secondary" @click="joinGame(1)" :disabled="!isInitialized || !choice">Join Game</v-btn>
-    <v-btn color="green" @click="revealAndGetResult(1)" :disabled="!isInitialized">view result</v-btn>
-    <p>{{ message }}</p>
-    <p v-if="gameId">Game Created: ID {{ gameId }}</p>
-  </div>
-</template> -->
 
 <!-- Welcome to ZamaRPS — Rock-Paper-Scissors On-Chain
 Play the classic game of Rock-Paper-Scissors, now on-chain with real opponents. Get matched with another player online and see who comes out on top.
@@ -76,10 +59,10 @@ Lose: Your bet goes to your opponent. -->
                     <img src="@/assets/rock.svg" alt="Rock" />
                   </button>
                   <button class="choice-btn" data-choice="paper">
-                    <img src="@/assets//paper.svg" alt="Rock" />
+                    <img src="@/assets/paper.svg" alt="Rock" />
                   </button>
                   <button class="choice-btn" data-choice="scissors">
-                    <img src="@/assets//scissors.svg" alt="Rock" />
+                    <img src="@/assets/scissors.svg" alt="Rock" />
                   </button>
                 </div>
               </div>

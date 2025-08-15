@@ -9,9 +9,12 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Landing from '../pages/Landing.vue';
 import HomePage from '../pages/HomePage.vue';
 import Game from '../pages/Game.vue';
+import TestReLayer from "@/components/TestReLayer.vue";
+import ActiveFunc from "@/components/ActiveFunc.vue";
 
 const routes = [
   { path: '/', component: Landing },
+  { path: '/test', component: ActiveFunc },
   { path: '/home', component: HomePage },
   { path: '/game/:id', component: Game },
   { path: '/history', component: { template: '<div>Play History (TBD)</div>' } },
