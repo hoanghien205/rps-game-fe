@@ -31,7 +31,7 @@ export default {
       userAddress: null,
       choice: '',
       gameId: null,
-      contractAddress: '0x40EDd3b0f593C9EC2890395BD7215D2ca7a1cc0E', // thay bằng địa chỉ contract thật của bạn
+      contractAddress: '0x7e6acfa450EE9B539426Ea5D5381957B47c96E0A', // thay bằng địa chỉ contract thật của bạn
     };
   },
   methods: {
@@ -203,7 +203,7 @@ export default {
     async revealAndGetResult(gameId) {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
-      const ciphertextHandle = '0xba14ae0f027bc3ddb4d74ac36db9dd2d6ab92bae26ff0000000000aa36a70200';
+      const ciphertextHandle = '0xb1fe7de937e5a5fc05e42b2603c34660ea54797724ff0000000000aa36a70200';
       const keypair = this.instance.generateKeypair();
 
       // 4. Chuẩn bị request EIP-712
