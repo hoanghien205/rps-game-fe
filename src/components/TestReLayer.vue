@@ -1,4 +1,3 @@
-
 <!-- Welcome to ZamaRPS — Rock-Paper-Scissors On-Chain
 Play the classic game of Rock-Paper-Scissors, now on-chain with real opponents. Get matched with another player online and see who comes out on top.
 
@@ -25,8 +24,8 @@ Lose: Your bet goes to your opponent. -->
       <nav class="nav">
         <!-- <span>Games</span> -->
         <!-- <span>Monroll</span> -->
-        <span>Faucet</span>
-        <span>Leaderboard</span>
+        <span>Connect</span>
+        <!-- <span>Leaderboard</span> -->
       </nav>
       <!-- <div class="airdrop">
         <span>Weekly Airdrop</span>
@@ -40,7 +39,7 @@ Lose: Your bet goes to your opponent. -->
       <div class="game-container">
         <!-- Left Panel: Game Controls -->
         <div class="game-controls">
-          <h2>Rock Paper Scissors</h2>
+          <h1>Rock Paper Scissors</h1>
           <!-- <button class="play-button">Let's play!</button> -->
           <div class="game-container-2">
             <div class="amount-section">
@@ -55,14 +54,14 @@ Lose: Your bet goes to your opponent. -->
 
               <div class="choices-section">
                 <div class="choices">
-                  <button class="choice-btn" data-choice="rock">
-                    <img src="@/assets/rock.svg" alt="Rock" />
+                  <button class="choice-btn" data-choice="rock" @click="onChoice('rock')">
+                    <img src="@/assets/rock.svg" />
                   </button>
-                  <button class="choice-btn" data-choice="paper">
-                    <img src="@/assets/paper.svg" alt="Rock" />
+                  <button class="choice-btn" data-choice="paper" @click="onChoice('paper')">
+                    <img src="@/assets/paper.svg" />
                   </button>
-                  <button class="choice-btn" data-choice="scissors">
-                    <img src="@/assets/scissors.svg" alt="Rock" />
+                  <button class="choice-btn" data-choice="scissors" @click="onChoice('scissors')">
+                    <img src="@/assets/scissors.svg" />
                   </button>
                 </div>
               </div>
@@ -77,53 +76,72 @@ Lose: Your bet goes to your opponent. -->
 
 
             <div class="game-visual">
-              <img src="" alt="Rock" />
+              <img v-if="playerChoice" :key="playerChoice" :src="images[playerChoice]" :alt="playerChoice" />
               <span class="vs">VS</span>
-              <img src="" alt="Scissors" />
+              <transition name="fade" mode="out-in">
+                <img v-if="opponentChoice" :key="opponentChoice" :src="images[opponentChoice]" :alt="opponentChoice" />
+              </transition>
             </div>
 
           </div>
         </div>
 
 
-        <!-- Right Panel: Result and Recent Games -->
-        <div class="game-result-history">
-          <div class="game-result">
-            <span>YOU WIN</span>
-            <span class="win-amount">38.8 ETH</span>
-          </div>
-          <div class="game-history">
+        <div class="game-container-3">
+          <!-- Left history -->
+          <div class="game-result-history">
             <h3>Your Recent Games</h3>
-            <table>
-              <thead>
-                <tr>
-                  <th>Player Pick</th>
-                  <th>Contract Pick</th>
-                  <th>Bet</th>
-                  <th>Winnings</th>
-                  <th>Time</th>
-                  <th>Transaction</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Rock</td>
-                  <td>Scissors</td>
-                  <td>20</td>
-                  <td class="win">38.8</td>
-                  <td>10 Aug 16:23</td>
-                  <td>Explore</td>
-                </tr>
-                <tr>
-                  <td>Scissors</td>
-                  <td>Scissors</td>
-                  <td>20</td>
-                  <td class="win">19.4</td>
-                  <td>10 Aug 16:23</td>
-                  <td>Explore</td>
-                </tr>
-              </tbody>
-            </table>
+
+            <div class="game-history">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Your Pick</th>
+                    <th>Opponent Pick</th>
+                    <th>Bet</th>
+                    <th>Result</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="item in gameHistory">
+                    <td>{{ item.yourPick }}</td>
+                    <td>{{ item.opponentPick }}</td>
+                    <td>{{ item.bet }}</td>
+                    <td>
+                      <span class="result-badge" :class="item.result >= item.bet ? 'win' : 'lose'">{{ item.result
+                        }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+            </div>
+          </div>
+
+          <!-- Right Leaderboard -->
+          <div class="game-result-history">
+            <h3>Leaderboard</h3>
+
+            <div class="game-history">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Address</th>
+                    <th>Total Bets</th>
+                    <th>Rewards</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="player in leaderboard" :class="`rank-${player.rank}`">
+                    <td>{{ player.rank }}</td>
+                    <td>{{ player.player }}</td>
+                    <td>{{ player.total }}</td>
+                    <td>{{ player.rewards }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -239,13 +257,28 @@ Lose: Your bet goes to your opponent. -->
   gap: 20px;
 }
 
-.game-controls,
-.game-history {
+.game-container-3 {
+  border-radius: 10px;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+}
+
+.game-result-history {
+  width: 50%;
+}
+
+.game-controls {
+  box-shadow: rgba(50, 50, 105, 0.15) 0px 2px 5px 0px, rgba(0, 0, 0, 0.05) 0px 1px 1px 0px;
+}
+
+.game-controls {
   padding: 15px;
   background-color: #E8E8E8;
   border-radius: 5px;
 }
 
+.game-controls h1,
 .game-controls h2,
 .game-history h3 {
   text-align: center;
@@ -292,6 +325,11 @@ Lose: Your bet goes to your opponent. -->
   cursor: pointer;
 }
 
+.amount-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
+}
+
 .choices-section {
   margin-top: 32px;
   margin-bottom: 16px;
@@ -309,6 +347,14 @@ Lose: Your bet goes to your opponent. -->
   justify-content: center;
 }
 
+.choices {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(20px, 100px);
+  gap: minmax(10px, 30px);
+  width: 100%;
+}
+
 .choice-btn {
   /* background: linear-gradient(145deg, #2c2c2c, #1a1a1a); */
   border: none;
@@ -323,6 +369,7 @@ Lose: Your bet goes to your opponent. -->
 
 .choice-btn img {
   width: 100%;
+  /* height: 76%; */
 }
 
 .choice-btn:hover {
@@ -340,12 +387,17 @@ Lose: Your bet goes to your opponent. -->
 }
 
 .game-visual {
-  text-align: center;
   width: 50%;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  background: linear-gradient(90deg, #FFD208, #e5b700);
+  border-radius: 24px;
+  margin: 16px 0px 16px 24px;
 }
 
 .game-visual img {
-  width: 120px;
+  width: 40%;
   margin: 10px;
 }
 
@@ -354,17 +406,38 @@ Lose: Your bet goes to your opponent. -->
   font-weight: bold;
 }
 
-.game-result {
-  background-color: #1b4332;
-  padding: 10px;
-  border-radius: 5px;
-  text-align: center;
-  margin-bottom: 15px;
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
 }
 
-.game-result .win-amount {
-  color: #d4a017;
-  margin-left: 10px;
+.game-result-history h3 {
+  background: linear-gradient(90deg, #FFD208, #e5b700);
+  color: #1D1D1B;
+  padding: 12px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0;
+  text-align: center;
+  box-shadow: rgba(50, 50, 105, 0.15) 0px 2px 5px 0px, rgba(0, 0, 0, 0.05) 0px 1px 1px 0px;
+  border-radius: 5px 5px 0px 0px;
+}
+
+.game-history {
+  box-shadow: rgba(50, 50, 105, 0.15) 0px 2px 5px 0px, rgba(0, 0, 0, 0.05) 0px 1px 1px 0px;
+  background-color: #E8E8E8;
+  max-height: 300px;
+  overflow-y: auto;
+  border-radius: 0px 0px 5px 5px;
+}
+
+.game-history thead {
+  position: sticky;
+  top: 0;
+  background: #f5f5f5;
+  z-index: 1;
 }
 
 .game-history table {
@@ -372,14 +445,38 @@ Lose: Your bet goes to your opponent. -->
   border-collapse: collapse;
 }
 
-.game-history th,
-.game-history td {
-  padding: 5px;
+.game-history th {
+  background-color: #E8E8E8;
+  color: #333;
+  font-weight: 600;
+  padding: 10px;
   text-align: center;
+}
+
+.game-history td {
+  padding: 12px;
+  text-align: center;
+  border-top: 1px solid #eee;
+}
+
+.game-history tbody tr:nth-child(odd) {
+  background-color: #fafafa;
+}
+
+.game-history tbody tr:hover {
+  background-color: #fff6cc;
+  transition: background 0.3s ease;
+  cursor: pointer;
 }
 
 .game-history .win {
   color: #1b4332;
+  font-weight: bold;
+}
+
+.game-history .lose {
+  color: red;
+  font-weight: bold;
 }
 </style>
 
@@ -387,6 +484,10 @@ Lose: Your bet goes to your opponent. -->
 import { initializeRelayerSDK } from '../utils/relayer-sdk';
 import { ethers, parseEther } from 'ethers';
 import contractABI from "@/abi/RockPaperScissorsABI.json";
+import { ref } from "vue";
+import rockImg from "@/assets/rock.svg";
+import paperImg from "@/assets/paper.svg";
+import scissorsImg from "@/assets/scissors.svg";
 
 export default {
   name: 'TestReLayer',
@@ -399,6 +500,45 @@ export default {
       choice: '',
       gameId: null,
       contractAddress: '0x1dFc7F2ab482da7cFA182e1E6992947F3C4F20BB', // thay bằng địa chỉ contract thật của bạn
+      gameHistory: [
+        { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20 },
+        { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1 },
+        { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20 },
+        { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20 },
+        { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1 },
+        { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20 },
+        { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20 },
+        { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1 },
+        { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20 },
+        { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20 },
+        { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1 },
+        { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20 },
+      ],
+      leaderboard: [
+        { rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8 },
+        { rank: 2, player: "0x37...7778", total: 200, rewards: 19.4 },
+        { rank: 3, player: "0x37...7779", total: 190, rewards: -19.4 },
+        { rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8 },
+        { rank: 2, player: "0x37...7778", total: 200, rewards: 19.4 },
+        { rank: 3, player: "0x37...7779", total: 190, rewards: -19.4 },
+        { rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8 },
+        { rank: 2, player: "0x37...7778", total: 200, rewards: 19.4 },
+        { rank: 3, player: "0x37...7779", total: 190, rewards: -19.4 },
+        { rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8 },
+        { rank: 2, player: "0x37...7778", total: 200, rewards: 19.4 },
+        { rank: 3, player: "0x37...7779", total: 190, rewards: -19.4 },
+
+      ],
+
+      images: {
+        rock: rockImg,
+        paper: paperImg,
+        scissors: scissorsImg,
+      },
+      playerChoice: null,
+      opponentChoice: null,
+      options: ["rock", "paper", "scissors"],
+      intervalId: null,
     };
   },
   methods: {
@@ -605,8 +745,28 @@ export default {
       const decryptedValue = result[ciphertextHandle];
       console.log("Giá trị giải mã:", decryptedValue);
       return decryptedValue;
-    }
+    },
 
+    onChoice(choice) {
+      this.playerChoice = choice;
+      this.opponentChoice = null;
+
+      let index = 0;
+      this.intervalId = setInterval(() => {
+        this.opponentChoice = this.options[index % this.options.length];
+        index++;
+      }, 100);
+
+      // Sau 2s thì dừng và chọn kết quả thật sự
+      setTimeout(() => {
+        clearInterval(this.intervalId);
+        this.opponentChoice =
+          this.options[Math.floor(Math.random() * this.options.length)];
+      }, 2000);
+    },
+  },
+  beforeUnmount() {
+    if (this.intervalId) clearInterval(this.intervalId);
   },
 };
 </script>
