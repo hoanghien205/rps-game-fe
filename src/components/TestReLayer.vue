@@ -1,24 +1,391 @@
+
+<!-- Welcome to ZamaRPS — Rock-Paper-Scissors On-Chain
+Play the classic game of Rock-Paper-Scissors, now on-chain with real opponents. Get matched with another player online and see who comes out on top.
+
+Every match is recorded on-chain for transparency and fairness.
+💰 Total transaction = Your Bet + Fee
+
+🤖 How to Play
+1️⃣ Place Your Bet — Wager between 0.01 and 0.5 $ETH.
+2️⃣ Pick Your Move — Rock, Paper, or Scissors. Your choice is locked on-chain.
+3️⃣ Get Matched — The system pairs you with another player.
+4️⃣ See the Result —
+
+Win: Double your bet.
+
+Draw: Your $ETH is refunded.
+
+Lose: Your bet goes to your opponent. -->
+
 <template>
-  <div>
-    <h1>Rock Paper Scissors</h1>
-    <button @click="initialize" :disabled="isInitialized">Initialize SDK</button>
-    <select v-model="choice" :disabled="!isInitialized">
-      <option value="" disabled>Select Choice</option>
-      <option value="1">Rock</option>
-      <option value="2">Paper</option>
-      <option value="3">Scissors</option>
-    </select>
-    <v-btn color="primary" @click="createGame" :disabled="!isInitialized || !choice">Create Game</v-btn>
-    <v-btn color="secondary" @click="joinGame(1)" :disabled="!isInitialized || !choice">Join Game</v-btn>
-    <v-btn color="green" @click="revealAndGetResult(1)" :disabled="!isInitialized">view result</v-btn>
-    <p>{{ message }}</p>
-    <p v-if="gameId">Game Created: ID {{ gameId }}</p>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">ZamaRPS</div>
+      <nav class="nav">
+        <!-- <span>Games</span> -->
+        <!-- <span>Monroll</span> -->
+        <span>Faucet</span>
+        <span>Leaderboard</span>
+      </nav>
+      <!-- <div class="airdrop">
+        <span>Weekly Airdrop</span>
+        <span class="airdrop-amount">8,759.51 </span>
+        <span class="airdrop-balance">140.9 </span>
+      </div> -->
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+      <div class="game-container">
+        <!-- Left Panel: Game Controls -->
+        <div class="game-controls">
+          <h2>Rock Paper Scissors</h2>
+          <!-- <button class="play-button">Let's play!</button> -->
+          <div class="game-container-2">
+            <div class="amount-section">
+
+              <div>
+                <input type="number" value="0.01" />
+                <button class="amount-btn">1x</button>
+                <button class="amount-btn">2x</button>
+                <button class="amount-btn">3x</button>
+                <button class="amount-btn">max</button>
+              </div>
+
+              <div class="choices-section">
+                <div class="choices">
+                  <button class="choice-btn" data-choice="rock">
+                    <img src="@/assets/rock.svg" alt="Rock" />
+                  </button>
+                  <button class="choice-btn" data-choice="paper">
+                    <img src="@/assets/paper.svg" alt="Rock" />
+                  </button>
+                  <button class="choice-btn" data-choice="scissors">
+                    <img src="@/assets/scissors.svg" alt="Rock" />
+                  </button>
+                </div>
+              </div>
+
+              <button class="play-btn">Play</button>
+
+              <div class="winnings">
+                <span>Your Winnings:</span>
+                <span>0 </span>
+              </div>
+            </div>
+
+
+            <div class="game-visual">
+              <img src="" alt="Rock" />
+              <span class="vs">VS</span>
+              <img src="" alt="Scissors" />
+            </div>
+
+          </div>
+        </div>
+
+
+        <!-- Right Panel: Result and Recent Games -->
+        <div class="game-result-history">
+          <div class="game-result">
+            <span>YOU WIN</span>
+            <span class="win-amount">38.8 ETH</span>
+          </div>
+          <div class="game-history">
+            <h3>Your Recent Games</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Player Pick</th>
+                  <th>Contract Pick</th>
+                  <th>Bet</th>
+                  <th>Winnings</th>
+                  <th>Time</th>
+                  <th>Transaction</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Rock</td>
+                  <td>Scissors</td>
+                  <td>20</td>
+                  <td class="win">38.8</td>
+                  <td>10 Aug 16:23</td>
+                  <td>Explore</td>
+                </tr>
+                <tr>
+                  <td>Scissors</td>
+                  <td>Scissors</td>
+                  <td>20</td>
+                  <td class="win">19.4</td>
+                  <td>10 Aug 16:23</td>
+                  <td>Explore</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
   </div>
 </template>
 
+<style scoped>
+.app-container {
+  background-color: #FFD208;
+  color: #1D1D1B;
+  font-family: Arial, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.header {
+  width: 100%;
+  background-color: #FFD208;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+.nav {
+  display: flex;
+  gap: 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.nav span {
+  position: relative;
+  cursor: pointer;
+  background: linear-gradient(90deg, #2D2D44, #e52e71, #6a5acd);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transition: background-position 0.5s ease;
+}
+
+.nav span::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(90deg, #2D2D44, #e52e71, #6a5acd);
+  background-size: 300% 100%;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.4s ease, background-position 0.5s ease;
+  border-radius: 2px;
+}
+
+.nav span:hover {
+  background-position: 100% 0;
+}
+
+.nav span:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+  background-position: 100% 0;
+}
+
+.airdrop {
+  background-color: #FFD208;
+  padding: 5px 10px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.airdrop-amount {
+  margin-left: 10px;
+}
+
+.airdrop-balance {
+  margin-left: 10px;
+  font-size: 0.9em;
+}
+
+.main {
+  width: 100%;
+  max-width: 1200px;
+  margin-top: 20px;
+}
+
+.game-container {
+  background-color: #F4F4F4;
+  padding: 20px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.game-container-2 {
+  padding: 20px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+}
+
+.game-controls,
+.game-history {
+  padding: 15px;
+  background-color: #E8E8E8;
+  border-radius: 5px;
+}
+
+.game-controls h2,
+.game-history h3 {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.play-btn {
+  width: 100%;
+  padding: 10px;
+  background-color: #FFD208;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 24px;
+}
+
+.amount-section {
+  margin-bottom: 15px;
+  width: 50%;
+}
+
+.amount-section label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.amount-section input {
+  width: 100%;
+  padding: 10px;
+  background-color: white;
+  border: none;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.amount-btn {
+  padding: 10px 20px;
+  background-color: #2d2d44;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.choices-section {
+  margin-top: 32px;
+  margin-bottom: 16px;
+}
+
+.choices {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.choices {
+  display: flex;
+  gap: 48px;
+  justify-content: center;
+}
+
+.choice-btn {
+  /* background: linear-gradient(145deg, #2c2c2c, #1a1a1a); */
+  border: none;
+  padding: 15px;
+  border-radius: 50%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  width: 100px;
+  height: 100px;
+}
+
+.choice-btn img {
+  width: 100%;
+}
+
+.choice-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
+}
+
+.winnings {
+  padding: 10px;
+  background-color: #d4a017;
+  color: #1a1a2e;
+  border-radius: 5px;
+  text-align: center;
+  margin-top: 15px;
+}
+
+.game-visual {
+  text-align: center;
+  width: 50%;
+}
+
+.game-visual img {
+  width: 120px;
+  margin: 10px;
+}
+
+.vs {
+  font-size: 2em;
+  font-weight: bold;
+}
+
+.game-result {
+  background-color: #1b4332;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.game-result .win-amount {
+  color: #d4a017;
+  margin-left: 10px;
+}
+
+.game-history table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.game-history th,
+.game-history td {
+  padding: 5px;
+  text-align: center;
+}
+
+.game-history .win {
+  color: #1b4332;
+}
+</style>
+
 <script>
 import { initializeRelayerSDK } from '../utils/relayer-sdk';
-import { ethers,parseEther } from 'ethers';
+import { ethers, parseEther } from 'ethers';
 import contractABI from "@/abi/RockPaperScissorsABI.json";
 
 export default {
@@ -87,7 +454,7 @@ export default {
         const contract = new ethers.Contract(this.contractAddress, contractABI, signer);
 
         const betAmount = parseEther("0.001");
-        const tx = await contract.createGame(inputChoiceHex, inputProofHex,  { value: betAmount });
+        const tx = await contract.createGame(inputChoiceHex, inputProofHex, { value: betAmount });
         console.log('Transaction sent:', tx.hash);
 
         const receipt = await tx.wait();

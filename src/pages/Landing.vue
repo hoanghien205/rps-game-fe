@@ -2,7 +2,7 @@
 <template>
   <v-app>
     <TestReLayer></TestReLayer>
-    <v-main class="landing-background">
+    <!-- <v-main class="landing-background">
       <v-container class="fill-height">
         <v-row align="center" justify="center">
           <v-col cols="12" md="6">
@@ -53,7 +53,7 @@
           </v-col>
         </v-row>
       </v-container>
-    </v-main>
+    </v-main> -->
   </v-app>
 </template>
 
