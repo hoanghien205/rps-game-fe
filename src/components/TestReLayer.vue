@@ -45,14 +45,16 @@ Lose: Your bet goes to your opponent. -->
             <div class="amount-section">
 
               <div>
-                <input type="number" value="0.01" />
-                <button class="amount-btn">1x</button>
-                <button class="amount-btn">2x</button>
-                <button class="amount-btn">3x</button>
-                <button class="amount-btn">max</button>
+                <h3>Bet size</h3>
+                <input type="number" v-model="bet" value="0.01" />
+                <button class="amount-btn" @click="amountUp(1)">1x</button>
+                <button class="amount-btn" @click="amountUp(2)">2x</button>
+                <button class="amount-btn" @click="amountUp(3)">3x</button>
+                <!-- <button class="amount-btn" @click="amountUp(1)">max</button> -->
               </div>
 
               <div class="choices-section">
+                <h3>Your Choice</h3>
                 <div class="choices">
                   <button class="choice-btn" data-choice="rock" @click="onChoice('rock')">
                     <img src="@/assets/rock.svg" />
@@ -66,7 +68,7 @@ Lose: Your bet goes to your opponent. -->
                 </div>
               </div>
 
-              <button class="play-btn">Play</button>
+              <button class="play-btn" @click="play()">PLAY</button>
 
               <div class="winnings">
                 <span>Your Winnings:</span>
@@ -77,7 +79,7 @@ Lose: Your bet goes to your opponent. -->
 
             <div class="game-visual">
               <img v-if="playerChoice" :key="playerChoice" :src="images[playerChoice]" :alt="playerChoice" />
-              <span class="vs">VS</span>
+              <span class="vs" v-if="playerChoice && opponentChoice">VS</span>
               <transition name="fade" mode="out-in">
                 <img v-if="opponentChoice" :key="opponentChoice" :src="images[opponentChoice]" :alt="opponentChoice" />
               </transition>
@@ -109,7 +111,7 @@ Lose: Your bet goes to your opponent. -->
                     <td>{{ item.bet }}</td>
                     <td>
                       <span class="result-badge" :class="item.result >= item.bet ? 'win' : 'lose'">{{ item.result
-                        }}</span>
+                      }}</span>
                     </td>
                   </tr>
                 </tbody>
@@ -164,7 +166,6 @@ Lose: Your bet goes to your opponent. -->
 .header {
   width: 100%;
   background-color: #FFD208;
-  padding: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -291,14 +292,23 @@ Lose: Your bet goes to your opponent. -->
   background-color: #FFD208;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 20px;
   cursor: pointer;
+  margin: auto;
   margin-top: 24px;
+  font-weight: 700;
+  font-size: 32px;
+  box-shadow: rgba(50, 50, 105, 0.15) 0px 2px 5px 0px, rgba(0, 0, 0, 0.05) 0px 1px 1px 0px;
+}
+
+.play-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
 }
 
 .amount-section {
   margin-bottom: 15px;
-  width: 50%;
+  width: 40%;
 }
 
 .amount-section label {
@@ -316,13 +326,14 @@ Lose: Your bet goes to your opponent. -->
 }
 
 .amount-btn {
-  padding: 10px 20px;
+  padding: 10px 8px;
   background-color: #2d2d44;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 50%;
   margin-right: 10px;
   cursor: pointer;
+  width: 60px;
 }
 
 .amount-btn:hover {
@@ -332,27 +343,17 @@ Lose: Your bet goes to your opponent. -->
 
 .choices-section {
   margin-top: 32px;
+  margin-top: 16px;
   margin-bottom: 16px;
-}
-
-.choices {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-
-.choices {
-  display: flex;
-  gap: 48px;
-  justify-content: center;
 }
 
 .choices {
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: minmax(20px, 100px);
-  gap: minmax(10px, 30px);
+  gap: 48px;
   width: 100%;
+  margin-top: 16px;
 }
 
 .choice-btn {
@@ -387,13 +388,14 @@ Lose: Your bet goes to your opponent. -->
 }
 
 .game-visual {
-  width: 50%;
+  width: 60%;
   align-items: center;
   display: flex;
-  justify-content: center;
+  justify-content: space-around;
   background: linear-gradient(90deg, #FFD208, #e5b700);
   border-radius: 24px;
-  margin: 16px 0px 16px 24px;
+  margin-left: 24px;
+  box-shadow: rgba(50, 50, 105, 0.15) 0px 2px 5px 0px, rgba(0, 0, 0, 0.05) 0px 1px 1px 0px;
 }
 
 .game-visual img {
@@ -406,10 +408,13 @@ Lose: Your bet goes to your opponent. -->
   font-weight: bold;
 }
 
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.3s;
 }
-.fade-enter-from, .fade-leave-to {
+
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 
@@ -529,7 +534,7 @@ export default {
         { rank: 3, player: "0x37...7779", total: 190, rewards: -19.4 },
 
       ],
-
+      bet: 0.01,
       images: {
         rock: rockImg,
         paper: paperImg,
@@ -747,19 +752,32 @@ export default {
       return decryptedValue;
     },
 
+    amountUp(multiplier) {
+      this.bet = Number(this.bet) * multiplier;
+    },
+
     onChoice(choice) {
+      if (this.intervalId) {
+        return;
+      }
       this.playerChoice = choice;
       this.opponentChoice = null;
+    },
 
+    play() {
+      if (this.intervalId) {
+        return;
+      }
       let index = 0;
       this.intervalId = setInterval(() => {
         this.opponentChoice = this.options[index % this.options.length];
         index++;
-      }, 100);
+      }, 300);
 
       // Sau 2s thì dừng và chọn kết quả thật sự
       setTimeout(() => {
         clearInterval(this.intervalId);
+        this.intervalId = null;
         this.opponentChoice =
           this.options[Math.floor(Math.random() * this.options.length)];
       }, 2000);
