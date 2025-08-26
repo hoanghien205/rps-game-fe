@@ -35,6 +35,7 @@ Lose: Your bet goes to your opponent. -->
     </header>
 
     <!-- Main Content -->
+    <GameList/>
     <main class="main">
       <div class="game-container">
         <!-- Left Panel: Game Controls -->
@@ -46,10 +47,10 @@ Lose: Your bet goes to your opponent. -->
 
               <div>
                 <h3>Bet size</h3>
-                <input type="number" v-model="bet" value="0.01" />
+                <input type="number" v-model="bet" value="0.001" />
                 <button class="amount-btn" @click="amountUp(1)">1x</button>
-                <button class="amount-btn" @click="amountUp(2)">2x</button>
-                <button class="amount-btn" @click="amountUp(3)">3x</button>
+                <button class="amount-btn" disabled  @click="amountUp(2)">2x</button>
+                <button class="amount-btn" disabled @click="amountUp(3)">3x</button>
                 <!-- <button class="amount-btn" @click="amountUp(1)">max</button> -->
               </div>
 
@@ -57,18 +58,22 @@ Lose: Your bet goes to your opponent. -->
                 <h3>Your Choice</h3>
                 <div class="choices">
                   <button class="choice-btn" data-choice="rock" @click="onChoice('rock')">
-                    <img src="@/assets/rock.svg" />
+                    <img src="@/assets/game/rock-btn.webp" />
+                    <div class="font-weight-bold text-h6">Rock</div>
                   </button>
                   <button class="choice-btn" data-choice="paper" @click="onChoice('paper')">
-                    <img src="@/assets/paper.svg" />
+                    <img src="@/assets/game/paper-btn.webp" />
+                    <div class="font-weight-bold text-h6">Paper</div>
                   </button>
                   <button class="choice-btn" data-choice="scissors" @click="onChoice('scissors')">
-                    <img src="@/assets/scissors.svg" />
+                    <img src="@/assets/game/scissors-btn.webp" />
+                    <div class="font-weight-bold text-h6">Scissors</div>
                   </button>
                 </div>
               </div>
 
-              <button class="play-btn" @click="play()">PLAY</button>
+<!--              <button class="play-btn" @click="play()">PLAY</button>-->
+              <img class="play-btn" src="@/assets/game/submit-btn.webp" />
 
               <div class="winnings">
                 <span>Your Winnings:</span>
@@ -153,7 +158,10 @@ Lose: Your bet goes to your opponent. -->
 
 <style scoped>
 .app-container {
-  background-color: #FFD208;
+  background-image: url('@/assets/game/background-game.webp');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
   color: #1D1D1B;
   font-family: Arial, sans-serif;
   min-height: 100vh;
@@ -288,17 +296,10 @@ Lose: Your bet goes to your opponent. -->
 
 .play-btn {
   width: 100%;
-  padding: 10px;
-  background-color: #FFD208;
   color: white;
-  border: none;
-  border-radius: 20px;
   cursor: pointer;
-  margin: auto;
-  margin-top: 24px;
   font-weight: 700;
   font-size: 32px;
-  box-shadow: rgba(50, 50, 105, 0.15) 0px 2px 5px 0px, rgba(0, 0, 0, 0.05) 0px 1px 1px 0px;
 }
 
 .play-btn:hover {
@@ -358,14 +359,8 @@ Lose: Your bet goes to your opponent. -->
 
 .choice-btn {
   /* background: linear-gradient(145deg, #2c2c2c, #1a1a1a); */
-  border: none;
-  padding: 15px;
-  border-radius: 50%;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.3s ease;
   width: 100px;
-  height: 100px;
 }
 
 .choice-btn img {
@@ -490,12 +485,14 @@ import { initializeRelayerSDK } from '../utils/relayer-sdk';
 import { ethers, parseEther } from 'ethers';
 import contractABI from "@/abi/RockPaperScissorsABI.json";
 import { ref } from "vue";
-import rockImg from "@/assets/rock.svg";
-import paperImg from "@/assets/paper.svg";
-import scissorsImg from "@/assets/scissors.svg";
+import rockImg from "@/assets/game/rock-btn.webp";
+import paperImg from "@/assets/game/paper-btn.webp";
+import scissorsImg from "@/assets/game/scissors-btn.webp";
+import GameList from "@/components/GameList.vue";
 
 export default {
   name: 'TestReLayer',
+  components: {GameList},
   data() {
     return {
       message: 'Not initialized',
@@ -534,7 +531,7 @@ export default {
         { rank: 3, player: "0x37...7779", total: 190, rewards: -19.4 },
 
       ],
-      bet: 0.01,
+      bet: 0.001,
       images: {
         rock: rockImg,
         paper: paperImg,
