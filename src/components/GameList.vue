@@ -1,5 +1,8 @@
 <template>
   <v-card width="100%">
+    <v-card-title>
+      <v-icon class="cursor-pointer" @click="getGameList">mdi-refresh</v-icon>
+    </v-card-title>
     <v-table>
       <thead>
       <tr>
@@ -73,7 +76,9 @@
   </v-dialog>
 </template>
 <script setup>
-import {ref} from "vue";
+import {onMounted, ref} from "vue";
+import {ethers} from "ethers";
+import contractABI from "@/abi/RockPaperScissorsABI.json";
 
 const dialog = ref(true);
 const playerChoice = ref("1");
@@ -82,27 +87,14 @@ const props = defineProps({
     type: Number,
     required: true
   },
+  contractAddress: {
+    type: String,
+    required: true
+  },
 })
 const emit = defineEmits(['update:gameId','CreateGame']);
 
-const gameList = [
-  {
-    id: 1,
-    player1: '0x03F133D02DC1C44401B8E67f7B394677EaCAFfAf',
-    player1Move: ' 0x99a7d48c314beb7c1ce881a85b05d7782f7c22d5bf000000000000aa36a70200',
-    createdAt: 1755598176,
-    player2: null,
-    player2Move: null,
-  },
-  {
-    id: 2,
-    player1: '0x03F133D02DC1C44401B8E67f7B394677EaCAFfAf',
-    player1Move: ' 0x99a7d48c314beb7c1ce881a85b05d7782f7c22d5bf000000000000aa36a70200',
-    createdAt: 1755998176,
-    player2: null,
-    player2Move: null,
-  },
-]
+const gameList = ref([])
 
 function convertDate(i) {
   return new Date(i * 1000).toLocaleDateString()
@@ -116,9 +108,43 @@ function onChoice(element) {
   playerChoice.value = element;
 }
 
+async function getGameList() {
+  const provider = new ethers.BrowserProvider(window.ethereum);
+  const signer = await provider.getSigner();
+  const contract = new ethers.Contract(props.contractAddress, contractABI, signer);
+  const listId= await contract.getActiveGames();
+  const idGames = [...listId].map(v => Number(v));
+  const gameDetails = [];
+  for (const id of idGames) {
+    const item = await contract.games(id);
+    const games ={
+      id: id,
+      player1: item[0],
+      player1Move: item[1],
+      createdAt: Number(item[2]),
+      player2: item[3],
+      player2Move: item[4],
+      played2: item[5],
+      resultCipher: item[6],
+      rewarded: item[7],
+      decryptPending: item[8],
+      decryptReqId: Number(item[9]),
+      decryptRequestedAt: Number(item[10])
+    };
+    gameDetails.push(games);
+  }
+
+
+  gameList.value = gameDetails;
+}
+
 function createGame() {
   emit('CreateGame', playerChoice);
 }
+onMounted(() => {
+  getGameList();
+})
+
 </script>
 <style scoped>
 .v-card {

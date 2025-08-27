@@ -35,32 +35,44 @@ Lose: Your bet goes to your opponent. -->
     </header>
 
     <!-- Main Content -->
-    <GameList  v-model:gameId="gameId"  @CreateGame="createGame($event)" />
+    <GameList v-model:gameId="gameId" :contractAddress="contractAddress" @CreateGame="createGame($event)"/>
     <main class="main">
       <div class="game-container">
         <!-- Left Panel: Game Controls -->
         <div class="game-controls">
-          <h1>Game ID: {{gameId}}</h1>
+          <h1>Game ID: {{ gameId }}</h1>
           <!-- <button class="play-button">Let's play!</button> -->
           <div class="game-container-2">
             <div class="amount-section">
 
               <div>
                 <h3>Bet size</h3>
-                <input type="number" v-model="bet" value="0.001" />
+                <input type="number" v-model="bet" value="0.001"/>
                 <button class="amount-btn" @click="amountUp(1)">1x</button>
-                <button class="amount-btn" disabled  @click="amountUp(2)">2x</button>
+                <button class="amount-btn" disabled @click="amountUp(2)">2x</button>
                 <button class="amount-btn" disabled @click="amountUp(3)">3x</button>
                 <!-- <button class="amount-btn" @click="amountUp(1)">max</button> -->
               </div>
 
               <div class="choices-section">
                 <h3>Your Choice</h3>
-
+                <div class="choices">
+                  <button class="choice-btn" data-choice="rock" @click="onChoice('rock')">
+                    <img alt="" src="@/assets/game/rock-btn.webp"/>
+                    <span class="font-weight-bold text-h6">Rock</span>
+                  </button>
+                  <button class="choice-btn" data-choice="paper" @click="onChoice('paper')">
+                    <img alt="" src="@/assets/game/paper-btn.webp"/>
+                    <span class="font-weight-bold text-h6">Paper</span>
+                  </button>
+                  <button class="choice-btn" data-choice="scissors" @click="onChoice('scissors')">
+                    <img alt="" src="@/assets/game/scissors-btn.webp"/>
+                    <span class="font-weight-bold text-h6">Scissors</span>
+                  </button>
+                </div>
               </div>
 
-<!--              <button class="play-btn" @click="play()">PLAY</button>-->
-              <img class="play-btn" src="@/assets/game/submit-btn.webp" />
+              <img alt="" class="play-btn" src="@/assets/game/submit-btn.webp"/>
 
               <div class="winnings">
                 <span>Your Winnings:</span>
@@ -70,10 +82,10 @@ Lose: Your bet goes to your opponent. -->
 
 
             <div class="game-visual">
-              <img v-if="playerChoice" :key="playerChoice" :src="images[playerChoice]" :alt="playerChoice" />
+              <img v-if="playerChoice" :key="playerChoice" :src="images[playerChoice]" :alt="playerChoice"/>
               <span class="vs" v-if="playerChoice && opponentChoice">VS</span>
               <transition name="fade" mode="out-in">
-                <img v-if="opponentChoice" :key="opponentChoice" :src="images[opponentChoice]" :alt="opponentChoice" />
+                <img v-if="opponentChoice" :key="opponentChoice" :src="images[opponentChoice]" :alt="opponentChoice"/>
               </transition>
             </div>
 
@@ -89,23 +101,24 @@ Lose: Your bet goes to your opponent. -->
             <div class="game-history">
               <table>
                 <thead>
-                  <tr>
-                    <th>Your Pick</th>
-                    <th>Opponent Pick</th>
-                    <th>Bet</th>
-                    <th>Result</th>
-                  </tr>
+                <tr>
+                  <th>Your Pick</th>
+                  <th>Opponent Pick</th>
+                  <th>Bet</th>
+                  <th>Result</th>
+                </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="item in gameHistory">
-                    <td>{{ item.yourPick }}</td>
-                    <td>{{ item.opponentPick }}</td>
-                    <td>{{ item.bet }}</td>
-                    <td>
-                      <span class="result-badge" :class="item.result >= item.bet ? 'win' : 'lose'">{{ item.result
-                      }}</span>
-                    </td>
-                  </tr>
+                <tr v-for="item in gameHistory">
+                  <td>{{ item.yourPick }}</td>
+                  <td>{{ item.opponentPick }}</td>
+                  <td>{{ item.bet }}</td>
+                  <td>
+                      <span class="result-badge" :class="item.result >= item.bet ? 'win' : 'lose'">{{
+                          item.result
+                        }}</span>
+                  </td>
+                </tr>
                 </tbody>
               </table>
 
@@ -119,20 +132,20 @@ Lose: Your bet goes to your opponent. -->
             <div class="game-history">
               <table>
                 <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Address</th>
-                    <th>Total Bets</th>
-                    <th>Rewards</th>
-                  </tr>
+                <tr>
+                  <th>#</th>
+                  <th>Address</th>
+                  <th>Total Bets</th>
+                  <th>Rewards</th>
+                </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="player in leaderboard" :class="`rank-${player.rank}`">
-                    <td>{{ player.rank }}</td>
-                    <td>{{ player.player }}</td>
-                    <td>{{ player.total }}</td>
-                    <td>{{ player.rewards }}</td>
-                  </tr>
+                <tr v-for="player in leaderboard" :class="`rank-${player.rank}`">
+                  <td>{{ player.rank }}</td>
+                  <td>{{ player.player }}</td>
+                  <td>{{ player.total }}</td>
+                  <td>{{ player.rewards }}</td>
+                </tr>
                 </tbody>
               </table>
             </div>
@@ -475,10 +488,10 @@ Lose: Your bet goes to your opponent. -->
 </style>
 
 <script>
-import { initializeRelayerSDK } from '../utils/relayer-sdk';
-import { ethers, parseEther } from 'ethers';
+import {initializeRelayerSDK} from '../utils/relayer-sdk';
+import {ethers, parseEther} from 'ethers';
 import contractABI from "@/abi/RockPaperScissorsABI.json";
-import { ref } from "vue";
+import {ref} from "vue";
 import rockImg from "@/assets/game/rock-btn.webp";
 import paperImg from "@/assets/game/paper-btn.webp";
 import scissorsImg from "@/assets/game/scissors-btn.webp";
@@ -494,35 +507,35 @@ export default {
       instance: null,
       userAddress: null,
       choice: '',
-      gameId: null  ,
-      contractAddress: '0x7e6acfa450EE9B539426Ea5D5381957B47c96E0A', // thay bằng địa chỉ contract thật của bạn
+      gameId: null,
+      contractAddress: '0x8178ee3F90F08011370671Fd082Df390C648ecb2', // thay bằng địa chỉ contract thật của bạn
       gameHistory: [
-        { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20 },
-        { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1 },
-        { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20 },
-        { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20 },
-        { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1 },
-        { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20 },
-        { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20 },
-        { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1 },
-        { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20 },
-        { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20 },
-        { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1 },
-        { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20 },
+        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
+        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1},
+        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
+        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
+        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1},
+        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
+        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
+        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1},
+        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
+        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
+        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1},
+        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
       ],
       leaderboard: [
-        { rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8 },
-        { rank: 2, player: "0x37...7778", total: 200, rewards: 19.4 },
-        { rank: 3, player: "0x37...7779", total: 190, rewards: -19.4 },
-        { rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8 },
-        { rank: 2, player: "0x37...7778", total: 200, rewards: 19.4 },
-        { rank: 3, player: "0x37...7779", total: 190, rewards: -19.4 },
-        { rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8 },
-        { rank: 2, player: "0x37...7778", total: 200, rewards: 19.4 },
-        { rank: 3, player: "0x37...7779", total: 190, rewards: -19.4 },
-        { rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8 },
-        { rank: 2, player: "0x37...7778", total: 200, rewards: 19.4 },
-        { rank: 3, player: "0x37...7779", total: 190, rewards: -19.4 },
+        {rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8},
+        {rank: 2, player: "0x37...7778", total: 200, rewards: 19.4},
+        {rank: 3, player: "0x37...7779", total: 190, rewards: -19.4},
+        {rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8},
+        {rank: 2, player: "0x37...7778", total: 200, rewards: 19.4},
+        {rank: 3, player: "0x37...7779", total: 190, rewards: -19.4},
+        {rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8},
+        {rank: 2, player: "0x37...7778", total: 200, rewards: 19.4},
+        {rank: 3, player: "0x37...7779", total: 190, rewards: -19.4},
+        {rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8},
+        {rank: 2, player: "0x37...7778", total: 200, rewards: 19.4},
+        {rank: 3, player: "0x37...7779", total: 190, rewards: -19.4},
 
       ],
       bet: 0.001,
@@ -544,7 +557,7 @@ export default {
         return;
       }
       try {
-        const { instance, userAddress } = await initializeRelayerSDK();
+        const {instance, userAddress} = await initializeRelayerSDK();
         this.instance = instance;
         this.userAddress = userAddress;
         console.log('User address set:', this.userAddress);
@@ -591,7 +604,7 @@ export default {
         const contract = new ethers.Contract(this.contractAddress, contractABI, signer);
 
         const betAmount = parseEther("0.001");
-        const tx = await contract.createGame(inputChoiceHex, inputProofHex, { value: betAmount });
+        const tx = await contract.createGame(inputChoiceHex, inputProofHex, {value: betAmount});
         console.log('Transaction sent:', tx.hash);
 
         const receipt = await tx.wait();
@@ -724,12 +737,12 @@ export default {
 
       const signature = await signer.signTypedData(
         eip712.domain,
-        { UserDecryptRequestVerification: eip712.types.UserDecryptRequestVerification },
+        {UserDecryptRequestVerification: eip712.types.UserDecryptRequestVerification},
         eip712.message
       );
       // 5. Gọi userDecrypt
       const result = await this.instance.userDecrypt(
-        [{ handle: ciphertextHandle, contractAddress }],
+        [{handle: ciphertextHandle, contractAddress}],
         keypair.privateKey,
         keypair.publicKey,
         signature.replace("0x", ""),
