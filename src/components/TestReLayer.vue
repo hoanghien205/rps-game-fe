@@ -35,12 +35,12 @@ Lose: Your bet goes to your opponent. -->
     </header>
 
     <!-- Main Content -->
-    <GameList/>
+    <GameList  v-model:gameId="gameId"  @CreateGame="createGame($event)" />
     <main class="main">
       <div class="game-container">
         <!-- Left Panel: Game Controls -->
         <div class="game-controls">
-          <h1>Rock Paper Scissors</h1>
+          <h1>Game ID: {{gameId}}</h1>
           <!-- <button class="play-button">Let's play!</button> -->
           <div class="game-container-2">
             <div class="amount-section">
@@ -56,20 +56,7 @@ Lose: Your bet goes to your opponent. -->
 
               <div class="choices-section">
                 <h3>Your Choice</h3>
-                <div class="choices">
-                  <button class="choice-btn" data-choice="rock" @click="onChoice('rock')">
-                    <img src="@/assets/game/rock-btn.webp" />
-                    <div class="font-weight-bold text-h6">Rock</div>
-                  </button>
-                  <button class="choice-btn" data-choice="paper" @click="onChoice('paper')">
-                    <img src="@/assets/game/paper-btn.webp" />
-                    <div class="font-weight-bold text-h6">Paper</div>
-                  </button>
-                  <button class="choice-btn" data-choice="scissors" @click="onChoice('scissors')">
-                    <img src="@/assets/game/scissors-btn.webp" />
-                    <div class="font-weight-bold text-h6">Scissors</div>
-                  </button>
-                </div>
+
               </div>
 
 <!--              <button class="play-btn" @click="play()">PLAY</button>-->
@@ -177,6 +164,13 @@ Lose: Your bet goes to your opponent. -->
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+
+.selected {
+  filter: brightness(1.3);
+  border: 2px solid #ffd700;
+  border-radius: 4px;
 }
 
 .logo {
@@ -500,8 +494,8 @@ export default {
       instance: null,
       userAddress: null,
       choice: '',
-      gameId: null,
-      contractAddress: '0x1dFc7F2ab482da7cFA182e1E6992947F3C4F20BB', // thay bằng địa chỉ contract thật của bạn
+      gameId: null  ,
+      contractAddress: '0x7e6acfa450EE9B539426Ea5D5381957B47c96E0A', // thay bằng địa chỉ contract thật của bạn
       gameHistory: [
         { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20 },
         { yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1 },
@@ -562,8 +556,9 @@ export default {
         console.error('Initialization error:', error);
       }
     },
-    async createGame() {
-      if (!this.instance || !this.choice || !this.userAddress) {
+    async createGame(event) {
+      const choice = Number(event.value);
+      if (!this.instance || !choice || !this.userAddress) {
         this.message = 'SDK not initialized, no choice selected, or no user address!';
         return;
       }
@@ -574,11 +569,11 @@ export default {
       }
 
       try {
-        console.log('Encrypting choice:', this.choice);
+        console.log('Encrypting choice:', choice);
 
 
         const buffer = this.instance.createEncryptedInput(this.contractAddress, this.userAddress);
-        buffer.add8(BigInt(parseInt(this.choice))); // Rock = 1, Paper = 2, Scissors = 3
+        buffer.add8(BigInt(parseInt(choice))); // Rock = 1, Paper = 2, Scissors = 3
 
         const encrypted = await buffer.encrypt();
         const inputChoice = encrypted.handles;  // ✅ Lấy đúng address
@@ -783,5 +778,8 @@ export default {
   beforeUnmount() {
     if (this.intervalId) clearInterval(this.intervalId);
   },
+  mounted() {
+    this.initialize()
+  }
 };
 </script>
