@@ -22,16 +22,8 @@ Lose: Your bet goes to your opponent. -->
     <header class="header">
       <div class="logo">ZamaRPS</div>
       <nav class="nav">
-        <!-- <span>Games</span> -->
-        <!-- <span>Monroll</span> -->
         <span>Connect</span>
-        <!-- <span>Leaderboard</span> -->
       </nav>
-      <!-- <div class="airdrop">
-        <span>Weekly Airdrop</span>
-        <span class="airdrop-amount">8,759.51 </span>
-        <span class="airdrop-balance">140.9 </span>
-      </div> -->
     </header>
 
     <!-- Main Content -->
@@ -39,7 +31,7 @@ Lose: Your bet goes to your opponent. -->
     <main class="main">
       <div class="game-container">
         <!-- Left Panel: Game Controls -->
-        <div class="game-controls">
+        <div class="game-controls" v-if="gameId">
           <h1>Game ID: {{ gameId }}</h1>
           <!-- <button class="play-button">Let's play!</button> -->
           <div class="game-container-2">
@@ -57,22 +49,22 @@ Lose: Your bet goes to your opponent. -->
               <div class="choices-section">
                 <h3>Your Choice</h3>
                 <div class="choices">
-                  <button class="choice-btn" data-choice="rock" @click="onChoice('rock')">
+                  <button class="choice-btn"  :class="{ selected: playerChoice === '1' }" data-choice="1" @click="onChoice('1')">
                     <img alt="" src="@/assets/game/rock-btn.webp"/>
                     <span class="font-weight-bold text-h6">Rock</span>
                   </button>
-                  <button class="choice-btn" data-choice="paper" @click="onChoice('paper')">
+                  <button class="choice-btn"  :class="{ selected: playerChoice === '2' }" data-choice="2" @click="onChoice('2')">
                     <img alt="" src="@/assets/game/paper-btn.webp"/>
                     <span class="font-weight-bold text-h6">Paper</span>
                   </button>
-                  <button class="choice-btn" data-choice="scissors" @click="onChoice('scissors')">
+                  <button class="choice-btn" :class="{ selected: playerChoice === '3' }" data-choice="3" @click="onChoice('3')">
                     <img alt="" src="@/assets/game/scissors-btn.webp"/>
                     <span class="font-weight-bold text-h6">Scissors</span>
                   </button>
                 </div>
               </div>
 
-              <img alt="" class="play-btn" src="@/assets/game/submit-btn.webp"/>
+              <img alt="" class="play-btn" src="@/assets/game/submit-btn.webp" @click="joinGame()"/>
 
               <div class="winnings">
                 <span>Your Winnings:</span>
@@ -154,7 +146,321 @@ Lose: Your bet goes to your opponent. -->
       </div>
     </main>
   </div>
+
+  <v-overlay v-model="dialogLoading" class="loading-overlay">
+    <v-progress-circular
+      color="primary"
+      indeterminate
+      size="x-large"
+    ></v-progress-circular>
+  </v-overlay>
 </template>
+
+<script>
+import {initializeRelayerSDK} from '../utils/relayer-sdk';
+import {ethers, parseEther} from 'ethers';
+import contractABI from "@/abi/RockPaperScissorsABI.json";
+import {ref} from "vue";
+import rockImg from "@/assets/game/rock-btn.webp";
+import paperImg from "@/assets/game/paper-btn.webp";
+import scissorsImg from "@/assets/game/scissors-btn.webp";
+import GameList from "@/components/GameList.vue";
+
+export default {
+  name: 'TestReLayer',
+  components: {GameList},
+  data() {
+    return {
+      message: 'Not initialized',
+      isInitialized: false,
+      instance: null,
+      userAddress: null,
+      dialogLoading: false,
+      choice: '',
+      gameId: null,
+      contractAddress: '0x8178ee3F90F08011370671Fd082Df390C648ecb2',
+      gameHistory: [
+        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
+        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1},
+        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
+        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
+        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1},
+        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
+        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
+        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1},
+        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
+        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
+        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1},
+        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
+      ],
+      leaderboard: [
+        {rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8},
+        {rank: 2, player: "0x37...7778", total: 200, rewards: 19.4},
+        {rank: 3, player: "0x37...7779", total: 190, rewards: -19.4},
+        {rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8},
+        {rank: 2, player: "0x37...7778", total: 200, rewards: 19.4},
+        {rank: 3, player: "0x37...7779", total: 190, rewards: -19.4},
+        {rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8},
+        {rank: 2, player: "0x37...7778", total: 200, rewards: 19.4},
+        {rank: 3, player: "0x37...7779", total: 190, rewards: -19.4},
+        {rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8},
+        {rank: 2, player: "0x37...7778", total: 200, rewards: 19.4},
+        {rank: 3, player: "0x37...7779", total: 190, rewards: -19.4},
+
+      ],
+      bet: 0.001,
+      images: {
+        rock: rockImg,
+        paper: paperImg,
+        scissors: scissorsImg,
+      },
+      playerChoice: null,
+      opponentChoice: null,
+      options: ["rock", "paper", "scissors"],
+      intervalId: null,
+    };
+  },
+  methods: {
+    async initialize() {
+      if (this.isInitialized) {
+        console.log('Component already initialized, skipping...');
+        return;
+      }
+      try {
+        const {instance, userAddress} = await initializeRelayerSDK();
+        this.instance = instance;
+        this.userAddress = userAddress;
+        console.log('User address set:', this.userAddress);
+        this.message = 'SDK initialized successfully!';
+        this.isInitialized = true;
+        // this.decrypt();
+      } catch (error) {
+        this.message = 'Failed to initialize SDK';
+        console.error('Initialization error:', error);
+      }
+    },
+    async createGame(event) {
+      const choice = Number(event.value);
+      if (!this.instance || !choice || !this.userAddress) {
+        this.message = 'SDK not initialized, no choice selected, or no user address!';
+        return;
+      }
+      this.dialogLoading = true;
+      try {
+        console.log('Encrypting choice:', choice);
+        const buffer = this.instance.createEncryptedInput(this.contractAddress, this.userAddress);
+        buffer.add8(BigInt(parseInt(choice))); // Rock = 1, Paper = 2, Scissors = 3
+
+        const encrypted = await buffer.encrypt();
+        const inputChoice = encrypted.handles;  // ✅ Lấy đúng address
+        const inputProof = encrypted.inputProof;
+
+        const toHex = (u8arr) =>
+          '0x' + [...u8arr].map(x => x.toString(16).padStart(2, '0')).join('');
+
+        const inputChoiceHex = toHex(inputChoice[0]);  // ✅ chính xác
+        const inputProofHex = toHex(inputProof);
+
+        // ✅ 3. Kết nối và gọi smart contract
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const contract = new ethers.Contract(this.contractAddress, contractABI, signer);
+
+        const betAmount = parseEther("0.001");
+        this.dialogLoading = false;
+        const tx = await contract.createGame(inputChoiceHex, inputProofHex, {value: betAmount});
+        console.log('Transaction sent:', tx.hash);
+
+        const receipt = await tx.wait();
+        console.log('Transaction confirmed:', receipt);
+
+        const event = receipt.logs
+          .map((log) => {
+            try {
+              return contract.interface.parseLog(log);
+            } catch {
+              return null;
+            }
+          })
+          .find((e) => e?.name === 'GameCreated');
+
+        if (event) {
+          this.gameId = event.args.gameId.toString();
+          this.message = `Game created successfully! ID: ${this.gameId}`;
+        } else {
+          this.message = 'Game created, but could not retrieve game ID';
+        }
+      } catch (error) {
+        this.message = 'Failed to create game';
+        this.dialogLoading = false;
+        console.error('Create game error:', error);
+      }
+    },
+
+    async joinGame() {
+      if (!this.instance || !this.playerChoice || !this.userAddress) {
+        this.message = 'SDK not initialized, no choice selected, or no user address!';
+        return;
+      }
+
+      if (!ethers.isAddress(this.contractAddress)) {
+        this.message = 'Invalid contract address!';
+        return;
+      }
+
+      // Kiểm tra giá trị choice
+      if (![1, 2, 3].includes(parseInt(this.playerChoice))) {
+        this.message = 'Invalid choice! Must be 1 (Rock), 2 (Paper), or 3 (Scissors)';
+        console.error(this.message);
+        return;
+      }
+
+      try {
+        const toHex = (u8arr) =>
+          '0x' + [...u8arr].map((x) => x.toString(16).padStart(2, '0')).join('');
+        console.log('Encrypting choice:', this.playerChoice);
+
+        // Tạo buffer và mã hóa lựa chọn
+        const buffer = this.instance.createEncryptedInput(this.contractAddress, this.userAddress);
+        buffer.add8(BigInt(parseInt(this.playerChoice)));
+        const encrypted = await buffer.encrypt();
+        const inputChoiceHex = toHex(encrypted.handles[0]);
+        const inputProofHex = typeof encrypted.inputProof === 'string'
+          ? encrypted.inputProof
+          : toHex(encrypted.inputProof);
+
+        // Kết nối với smart contract
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const contract = new ethers.Contract(this.contractAddress, contractABI, signer);
+
+        // Gọi joinGame với gasLimit cao
+        const betAmount = parseEther("0.001"); // 0.001 ETH
+        const tx = await contract.joinGame(this.gameId, inputChoiceHex, inputProofHex, {
+          value: betAmount,
+        });
+        console.log('Transaction sent:', tx.hash);
+
+        // Chờ giao dịch hoàn tất và phân tích log
+        const receipt = await tx.wait();
+        console.log('Transaction confirmed:', receipt.transactionHash);
+
+        // Phân tích các sự kiện DebugFHE
+        const debugEvents = receipt.logs
+          .map((log) => {
+            try {
+              return contract.interface.parseLog(log);
+            } catch {
+              return null;
+            }
+          })
+          .filter((e) => e?.name === 'DebugFHE');
+
+        if (debugEvents.length > 0) {
+          console.log('DebugFHE events:');
+          debugEvents.forEach((event) => {
+            const message = event.args.message;
+            const data = event.args.data;
+            let numericData;
+            try {
+              numericData = ethers.BigNumber.from(data).toNumber();
+            } catch {
+              numericData = data; // Giữ nguyên nếu không chuyển thành số được
+            }
+            console.log(`- ${message}: ${numericData}`);
+          });
+          this.message = 'Game joined successfully! Check console for debug logs.';
+        } else {
+          this.message = 'Game joined, but no DebugFHE events found.';
+        }
+      } catch (error) {
+        this.message = 'Failed to join game';
+        console.error('Join game error:', error);
+        if (error.data) {
+          console.error('Error data:', error.data);
+        }
+      }
+    },
+
+    async revealAndGetResult(gameId) {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const ciphertextHandle = '0x59573f986e594fd35e77d341aca13b22053eb3871dff0000000000aa36a70200';
+      const keypair = this.instance.generateKeypair();
+
+      // 4. Chuẩn bị request EIP-712
+      const startTimeStamp = Math.floor(Date.now() / 1000).toString();
+      const durationDays = "10";
+      const contractAddresses = [this.contractAddress];
+      const contractAddress = this.contractAddress;
+      const eip712 = this.instance.createEIP712(
+        keypair.publicKey,
+        contractAddresses,
+        startTimeStamp,
+        durationDays
+      );
+
+      const signature = await signer.signTypedData(
+        eip712.domain,
+        {UserDecryptRequestVerification: eip712.types.UserDecryptRequestVerification},
+        eip712.message
+      );
+      // 5. Gọi userDecrypt
+      const result = await this.instance.userDecrypt(
+        [{handle: ciphertextHandle, contractAddress}],
+        keypair.privateKey,
+        keypair.publicKey,
+        signature.replace("0x", ""),
+        contractAddresses,
+        signer.address,
+        startTimeStamp,
+        durationDays
+      );
+
+      const decryptedValue = result[ciphertextHandle];
+      console.log("Giá trị giải mã:", decryptedValue);
+      return decryptedValue;
+    },
+
+    amountUp(multiplier) {
+      this.bet = Number(this.bet) * multiplier;
+    },
+
+    onChoice(choice) {
+      if (this.intervalId) {
+        return;
+      }
+      this.playerChoice = choice;
+      this.opponentChoice = null;
+    },
+
+    play() {
+      if (this.intervalId) {
+        return;
+      }
+      let index = 0;
+      this.intervalId = setInterval(() => {
+        this.opponentChoice = this.options[index % this.options.length];
+        index++;
+      }, 300);
+
+      // Sau 2s thì dừng và chọn kết quả thật sự
+      setTimeout(() => {
+        clearInterval(this.intervalId);
+        this.intervalId = null;
+        this.opponentChoice =
+          this.options[Math.floor(Math.random() * this.options.length)];
+      }, 2000);
+    },
+  },
+  beforeUnmount() {
+    if (this.intervalId) clearInterval(this.intervalId);
+  },
+  mounted() {
+    this.initialize()
+  }
+};
+</script>
 
 <style scoped>
 .app-container {
@@ -485,314 +791,9 @@ Lose: Your bet goes to your opponent. -->
   color: red;
   font-weight: bold;
 }
+
+.loading-overlay {
+  left: 50%;
+  top: 50%;
+}
 </style>
-
-<script>
-import {initializeRelayerSDK} from '../utils/relayer-sdk';
-import {ethers, parseEther} from 'ethers';
-import contractABI from "@/abi/RockPaperScissorsABI.json";
-import {ref} from "vue";
-import rockImg from "@/assets/game/rock-btn.webp";
-import paperImg from "@/assets/game/paper-btn.webp";
-import scissorsImg from "@/assets/game/scissors-btn.webp";
-import GameList from "@/components/GameList.vue";
-
-export default {
-  name: 'TestReLayer',
-  components: {GameList},
-  data() {
-    return {
-      message: 'Not initialized',
-      isInitialized: false,
-      instance: null,
-      userAddress: null,
-      choice: '',
-      gameId: null,
-      contractAddress: '0x8178ee3F90F08011370671Fd082Df390C648ecb2', // thay bằng địa chỉ contract thật của bạn
-      gameHistory: [
-        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
-        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1},
-        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
-        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
-        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1},
-        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
-        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
-        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1},
-        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
-        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
-        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1},
-        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
-      ],
-      leaderboard: [
-        {rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8},
-        {rank: 2, player: "0x37...7778", total: 200, rewards: 19.4},
-        {rank: 3, player: "0x37...7779", total: 190, rewards: -19.4},
-        {rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8},
-        {rank: 2, player: "0x37...7778", total: 200, rewards: 19.4},
-        {rank: 3, player: "0x37...7779", total: 190, rewards: -19.4},
-        {rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8},
-        {rank: 2, player: "0x37...7778", total: 200, rewards: 19.4},
-        {rank: 3, player: "0x37...7779", total: 190, rewards: -19.4},
-        {rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8},
-        {rank: 2, player: "0x37...7778", total: 200, rewards: 19.4},
-        {rank: 3, player: "0x37...7779", total: 190, rewards: -19.4},
-
-      ],
-      bet: 0.001,
-      images: {
-        rock: rockImg,
-        paper: paperImg,
-        scissors: scissorsImg,
-      },
-      playerChoice: null,
-      opponentChoice: null,
-      options: ["rock", "paper", "scissors"],
-      intervalId: null,
-    };
-  },
-  methods: {
-    async initialize() {
-      if (this.isInitialized) {
-        console.log('Component already initialized, skipping...');
-        return;
-      }
-      try {
-        const {instance, userAddress} = await initializeRelayerSDK();
-        this.instance = instance;
-        this.userAddress = userAddress;
-        console.log('User address set:', this.userAddress);
-        this.message = 'SDK initialized successfully!';
-        this.isInitialized = true;
-        // this.decrypt();
-      } catch (error) {
-        this.message = 'Failed to initialize SDK';
-        console.error('Initialization error:', error);
-      }
-    },
-    async createGame(event) {
-      const choice = Number(event.value);
-      if (!this.instance || !choice || !this.userAddress) {
-        this.message = 'SDK not initialized, no choice selected, or no user address!';
-        return;
-      }
-
-      if (!ethers.isAddress(this.contractAddress)) {
-        this.message = 'Invalid contract address!';
-        return;
-      }
-
-      try {
-        console.log('Encrypting choice:', choice);
-
-
-        const buffer = this.instance.createEncryptedInput(this.contractAddress, this.userAddress);
-        buffer.add8(BigInt(parseInt(choice))); // Rock = 1, Paper = 2, Scissors = 3
-
-        const encrypted = await buffer.encrypt();
-        const inputChoice = encrypted.handles;  // ✅ Lấy đúng address
-        const inputProof = encrypted.inputProof;
-
-        const toHex = (u8arr) =>
-          '0x' + [...u8arr].map(x => x.toString(16).padStart(2, '0')).join('');
-
-        const inputChoiceHex = toHex(inputChoice[0]);  // ✅ chính xác
-        const inputProofHex = toHex(inputProof);
-
-        // ✅ 3. Kết nối và gọi smart contract
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        const contract = new ethers.Contract(this.contractAddress, contractABI, signer);
-
-        const betAmount = parseEther("0.001");
-        const tx = await contract.createGame(inputChoiceHex, inputProofHex, {value: betAmount});
-        console.log('Transaction sent:', tx.hash);
-
-        const receipt = await tx.wait();
-        console.log('Transaction confirmed:', receipt);
-
-        const event = receipt.logs
-          .map((log) => {
-            try {
-              return contract.interface.parseLog(log);
-            } catch {
-              return null;
-            }
-          })
-          .find((e) => e?.name === 'GameCreated');
-
-        if (event) {
-          this.gameId = event.args.gameId.toString();
-          this.message = `Game created successfully! ID: ${this.gameId}`;
-        } else {
-          this.message = 'Game created, but could not retrieve game ID';
-        }
-      } catch (error) {
-        this.message = 'Failed to create game';
-        console.error('Create game error:', error);
-      }
-    },
-
-    async joinGame(id) {
-      if (!this.instance || !this.choice || !this.userAddress) {
-        this.message = 'SDK not initialized, no choice selected, or no user address!';
-        return;
-      }
-
-      if (!ethers.isAddress(this.contractAddress)) {
-        this.message = 'Invalid contract address!';
-        return;
-      }
-
-      // Kiểm tra giá trị choice
-      if (![1, 2, 3].includes(parseInt(this.choice))) {
-        this.message = 'Invalid choice! Must be 1 (Rock), 2 (Paper), or 3 (Scissors)';
-        console.error(this.message);
-        return;
-      }
-
-      try {
-        const toHex = (u8arr) =>
-          '0x' + [...u8arr].map((x) => x.toString(16).padStart(2, '0')).join('');
-        console.log('Encrypting choice:', this.choice);
-
-        // Tạo buffer và mã hóa lựa chọn
-        const buffer = this.instance.createEncryptedInput(this.contractAddress, this.userAddress);
-        buffer.add8(BigInt(parseInt(this.choice)));
-        const encrypted = await buffer.encrypt();
-        const inputChoiceHex = toHex(encrypted.handles[0]);
-        const inputProofHex = typeof encrypted.inputProof === 'string'
-          ? encrypted.inputProof
-          : toHex(encrypted.inputProof);
-
-        // Kết nối với smart contract
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        const contract = new ethers.Contract(this.contractAddress, contractABI, signer);
-
-        // Gọi joinGame với gasLimit cao
-        const betAmount = parseEther("0.001"); // 0.001 ETH
-        const tx = await contract.joinGame(id, inputChoiceHex, inputProofHex, {
-          value: betAmount,
-        });
-        console.log('Transaction sent:', tx.hash);
-
-        // Chờ giao dịch hoàn tất và phân tích log
-        const receipt = await tx.wait();
-        console.log('Transaction confirmed:', receipt.transactionHash);
-
-        // Phân tích các sự kiện DebugFHE
-        const debugEvents = receipt.logs
-          .map((log) => {
-            try {
-              return contract.interface.parseLog(log);
-            } catch {
-              return null;
-            }
-          })
-          .filter((e) => e?.name === 'DebugFHE');
-
-        if (debugEvents.length > 0) {
-          console.log('DebugFHE events:');
-          debugEvents.forEach((event) => {
-            const message = event.args.message;
-            const data = event.args.data;
-            let numericData;
-            try {
-              numericData = ethers.BigNumber.from(data).toNumber();
-            } catch {
-              numericData = data; // Giữ nguyên nếu không chuyển thành số được
-            }
-            console.log(`- ${message}: ${numericData}`);
-          });
-          this.message = 'Game joined successfully! Check console for debug logs.';
-        } else {
-          this.message = 'Game joined, but no DebugFHE events found.';
-        }
-      } catch (error) {
-        this.message = 'Failed to join game';
-        console.error('Join game error:', error);
-        if (error.data) {
-          console.error('Error data:', error.data);
-        }
-      }
-    },
-
-    async revealAndGetResult(gameId) {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const ciphertextHandle = '0x59573f986e594fd35e77d341aca13b22053eb3871dff0000000000aa36a70200';
-      const keypair = this.instance.generateKeypair();
-
-      // 4. Chuẩn bị request EIP-712
-      const startTimeStamp = Math.floor(Date.now() / 1000).toString();
-      const durationDays = "10";
-      const contractAddresses = [this.contractAddress];
-      const contractAddress = this.contractAddress;
-      const eip712 = this.instance.createEIP712(
-        keypair.publicKey,
-        contractAddresses,
-        startTimeStamp,
-        durationDays
-      );
-
-      const signature = await signer.signTypedData(
-        eip712.domain,
-        {UserDecryptRequestVerification: eip712.types.UserDecryptRequestVerification},
-        eip712.message
-      );
-      // 5. Gọi userDecrypt
-      const result = await this.instance.userDecrypt(
-        [{handle: ciphertextHandle, contractAddress}],
-        keypair.privateKey,
-        keypair.publicKey,
-        signature.replace("0x", ""),
-        contractAddresses,
-        signer.address,
-        startTimeStamp,
-        durationDays
-      );
-
-      const decryptedValue = result[ciphertextHandle];
-      console.log("Giá trị giải mã:", decryptedValue);
-      return decryptedValue;
-    },
-
-    amountUp(multiplier) {
-      this.bet = Number(this.bet) * multiplier;
-    },
-
-    onChoice(choice) {
-      if (this.intervalId) {
-        return;
-      }
-      this.playerChoice = choice;
-      this.opponentChoice = null;
-    },
-
-    play() {
-      if (this.intervalId) {
-        return;
-      }
-      let index = 0;
-      this.intervalId = setInterval(() => {
-        this.opponentChoice = this.options[index % this.options.length];
-        index++;
-      }, 300);
-
-      // Sau 2s thì dừng và chọn kết quả thật sự
-      setTimeout(() => {
-        clearInterval(this.intervalId);
-        this.intervalId = null;
-        this.opponentChoice =
-          this.options[Math.floor(Math.random() * this.options.length)];
-      }, 2000);
-    },
-  },
-  beforeUnmount() {
-    if (this.intervalId) clearInterval(this.intervalId);
-  },
-  mounted() {
-    this.initialize()
-  }
-};
-</script>

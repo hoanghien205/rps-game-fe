@@ -1,11 +1,11 @@
 <template>
-  <v-card width="100%">
+  <v-card width="100%" :loading="tableLoading">
     <v-card-title>
       <v-icon class="cursor-pointer" @click="getGameList">mdi-refresh</v-icon>
     </v-card-title>
     <v-table>
       <thead>
-      <tr>
+      <tr class="bg-amber">
         <th class="text-left">
           Game ID {{ gameId }}
         </th>
@@ -13,7 +13,7 @@
           Player 1
         </th>
         <th class="text-left">
-          createdAt
+          Created At
         </th>
         <th>Action</th>
       </tr>
@@ -46,7 +46,9 @@
     <v-card>
       <v-card-title class="d-flex justify-space-between">
         <span>Create Game</span>
-        <v-icon-btn @click="dialog=false"><v-icon>mdi-close</v-icon></v-icon-btn>
+        <v-icon-btn @click="dialog=false">
+          <v-icon>mdi-close</v-icon>
+        </v-icon-btn>
       </v-card-title>
       <div class="pa-4 text-center">
         <div>Bet Amount: 0.001ETH</div>
@@ -80,7 +82,8 @@ import {onMounted, ref} from "vue";
 import {ethers} from "ethers";
 import contractABI from "@/abi/RockPaperScissorsABI.json";
 
-const dialog = ref(true);
+const tableLoading = ref(false);
+const dialog = ref(false);
 const playerChoice = ref("1");
 const props = defineProps({
   gameId: {
@@ -92,7 +95,7 @@ const props = defineProps({
     required: true
   },
 })
-const emit = defineEmits(['update:gameId','CreateGame']);
+const emit = defineEmits(['update:gameId', 'CreateGame']);
 
 const gameList = ref([])
 
@@ -109,38 +112,45 @@ function onChoice(element) {
 }
 
 async function getGameList() {
-  const provider = new ethers.BrowserProvider(window.ethereum);
-  const signer = await provider.getSigner();
-  const contract = new ethers.Contract(props.contractAddress, contractABI, signer);
-  const listId= await contract.getActiveGames();
-  const idGames = [...listId].map(v => Number(v));
-  const gameDetails = [];
-  for (const id of idGames) {
-    const item = await contract.games(id);
-    const games ={
-      id: id,
-      player1: item[0],
-      player1Move: item[1],
-      createdAt: Number(item[2]),
-      player2: item[3],
-      player2Move: item[4],
-      played2: item[5],
-      resultCipher: item[6],
-      rewarded: item[7],
-      decryptPending: item[8],
-      decryptReqId: Number(item[9]),
-      decryptRequestedAt: Number(item[10])
-    };
-    gameDetails.push(games);
+  tableLoading.value = true;
+  try {
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    const contract = new ethers.Contract(props.contractAddress, contractABI, signer);
+    const listId = await contract.getActiveGames();
+    const idGames = [...listId].map(v => Number(v));
+    const gameDetails = [];
+    for (const id of idGames) {
+      const item = await contract.games(id);
+      const games = {
+        id: id,
+        player1: item[0],
+        player1Move: item[1],
+        createdAt: Number(item[2]),
+        player2: item[3],
+        player2Move: item[4],
+        played2: item[5],
+        resultCipher: item[6],
+        rewarded: item[7],
+        decryptPending: item[8],
+        decryptReqId: Number(item[9]),
+        decryptRequestedAt: Number(item[10])
+      };
+      gameDetails.push(games);
+    }
+    gameList.value = gameDetails;
+    tableLoading.value = false;
+  } catch (error) {
+    console.log(error);
+    tableLoading.value = false;
   }
 
-
-  gameList.value = gameDetails;
 }
 
 function createGame() {
   emit('CreateGame', playerChoice);
 }
+
 onMounted(() => {
   getGameList();
 })
