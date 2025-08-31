@@ -24,20 +24,23 @@ Lose: Your bet goes to your opponent. -->
         <img alt="" src="@/assets/logo.png">
       </div>
       <nav class="nav pa-4">
-        <v-btn v-if=!userAddress>Connect</v-btn>
+        <v-btn v-if=!userAddress @click="initialize">Connect</v-btn>
         <div v-if="userAddress">
           <span class="mr-2">{{shortAddress(userAddress)}}</span>
-          <v-icon class="cursor-pointer" color="deep-orange-darken-1">mdi-close</v-icon>
+          <v-icon class="cursor-pointer" color="deep-orange-darken-1" @click="disconnectWallet">mdi-close</v-icon>
         </div>
       </nav>
     </header>
 
     <!-- Main Content -->
-    <GameList v-model:gameId="gameId" :contractAddress="contractAddress" @CreateGame="createGame($event)"/>
+    <GameList v-model:gameId="gameId"
+              :contractAddress="contractAddress"
+              @CreateGame="createGame($event)"
+              />
     <main class="main">
       <div class="game-container">
         <!-- Left Panel: Game Controls -->
-        <div class="game-controls" v-if="gameId">
+        <div class="game-controls" v-if="gameId" id="GameDetailEL">
           <h1>Game ID: {{ gameId }}</h1>
           <!-- <button class="play-button">Let's play!</button> -->
           <div class="game-container-2">
@@ -100,21 +103,19 @@ Lose: Your bet goes to your opponent. -->
               <table>
                 <thead>
                 <tr>
-                  <th>Your Pick</th>
-                  <th>Opponent Pick</th>
-                  <th>Bet</th>
-                  <th>Result</th>
+                  <th>Game ID</th>
+                  <th>Bet Amount</th>
+                  <th>Created At</th>
+                  <th>Action</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr v-for="item in gameHistory">
-                  <td>{{ item.yourPick }}</td>
-                  <td>{{ item.opponentPick }}</td>
-                  <td>{{ item.bet }}</td>
+                  <td>{{ item.gameId }}</td>
+                  <td>{{ item.amount }}</td>
+                  <td>{{ item.date }}</td>
                   <td>
-                      <span class="result-badge" :class="item.result >= item.bet ? 'win' : 'lose'">{{
-                          item.result
-                        }}</span>
+                      <v-btn color="purple-accent-2">Result</v-btn>
                   </td>
                 </tr>
                 </tbody>
@@ -160,6 +161,38 @@ Lose: Your bet goes to your opponent. -->
       size="x-large"
     ></v-progress-circular>
   </v-overlay>
+
+  <v-dialog v-model="dialogRequestDecryption" max-width="400" persistent>
+    <v-card>
+      <v-card-title>Match Completed - Request Decryption</v-card-title>
+      <v-card-text>
+        <p>Both players have locked in their moves.</p>
+        <p>To finalize the game, you need to send a decryption request to the Oracle.</p>
+        <p>The Oracle will securely decrypt the result and automatically distribute the prize:</p>
+        <p> Winner receives the total pot (0.002 ETH).</p>
+        <p>In case of a draw, both players get their bets refunded.</p>
+        <p>This action only requires a gas fee. No additional bet is needed</p>
+      </v-card-text>
+      <v-card-actions>
+        <v-btn @click="requestPayout(gameId)">Request Result</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+  <v-snackbar
+    v-model="snackbar"
+  >
+   {{message}}
+
+    <template v-slot:actions>
+      <v-btn
+        color="pink"
+        variant="text"
+        @click="snackbar = false"
+      >
+        Close
+      </v-btn>
+    </template>
+  </v-snackbar>
 </template>
 
 <script>
@@ -186,18 +219,11 @@ export default {
       gameId: null,
       contractAddress: '0x8178ee3F90F08011370671Fd082Df390C648ecb2',
       gameHistory: [
-        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
-        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1},
-        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
-        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
-        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1},
-        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
-        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
-        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1},
-        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
-        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
-        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 1},
-        {yourPick: 'Rock', opponentPick: "Scissors", bet: 10, result: 20},
+        {gameId: 1, amount: 0.001, date: '8/29/2025'},
+        {gameId: 2, amount: 0.001, date: '8/31/2025'},
+        {gameId: 3, amount: 0.001, date: '8/31/2025'},
+        {gameId: 4, amount: 0.001, date: '8/31/2025'},
+        {gameId: 5, amount: 0.001, date: '8/31/2025'},
       ],
       leaderboard: [
         {rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8},
@@ -216,14 +242,16 @@ export default {
       ],
       bet: 0.001,
       images: {
-        rock: rockImg,
-        paper: paperImg,
-        scissors: scissorsImg,
+        '1': rockImg,
+        '2': paperImg,
+        '3': scissorsImg,
       },
       playerChoice: null,
       opponentChoice: null,
-      options: ["rock", "paper", "scissors"],
+      options: ["1", "2", "3"],
       intervalId: null,
+      dialogRequestDecryption: false,
+      snackbar: true
     };
   },
   methods: {
@@ -246,12 +274,14 @@ export default {
       }
     },
     async createGame(event) {
+      this.dialogLoading = true;
       const choice = Number(event.value);
       if (!this.instance || !choice || !this.userAddress) {
         this.message = 'SDK not initialized, no choice selected, or no user address!';
+        this.dialogLoading = false;
         return;
       }
-      this.dialogLoading = true;
+
       try {
         console.log('Encrypting choice:', choice);
         const buffer = this.instance.createEncryptedInput(this.contractAddress, this.userAddress);
@@ -264,10 +294,9 @@ export default {
         const toHex = (u8arr) =>
           '0x' + [...u8arr].map(x => x.toString(16).padStart(2, '0')).join('');
 
-        const inputChoiceHex = toHex(inputChoice[0]);  // ✅ chính xác
+        const inputChoiceHex = toHex(inputChoice[0]);
         const inputProofHex = toHex(inputProof);
 
-        // ✅ 3. Kết nối và gọi smart contract
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         const contract = new ethers.Contract(this.contractAddress, contractABI, signer);
@@ -293,6 +322,7 @@ export default {
         if (event) {
           this.gameId = event.args.gameId.toString();
           this.message = `Game created successfully! ID: ${this.gameId}`;
+          this.snackbar = true;
         } else {
           this.message = 'Game created, but could not retrieve game ID';
         }
@@ -327,6 +357,7 @@ export default {
       }
 
       try {
+        this.dialogLoading = true;
         const toHex = (u8arr) =>
           '0x' + [...u8arr].map((x) => x.toString(16).padStart(2, '0')).join('');
         console.log('Encrypting choice:', this.playerChoice);
@@ -355,37 +386,11 @@ export default {
         // Chờ giao dịch hoàn tất và phân tích log
         const receipt = await tx.wait();
         console.log('Transaction confirmed:', receipt.transactionHash);
-
-        // Phân tích các sự kiện DebugFHE
-        const debugEvents = receipt.logs
-          .map((log) => {
-            try {
-              return contract.interface.parseLog(log);
-            } catch {
-              return null;
-            }
-          })
-          .filter((e) => e?.name === 'DebugFHE');
-
-        if (debugEvents.length > 0) {
-          console.log('DebugFHE events:');
-          debugEvents.forEach((event) => {
-            const message = event.args.message;
-            const data = event.args.data;
-            let numericData;
-            try {
-              numericData = ethers.BigNumber.from(data).toNumber();
-            } catch {
-              numericData = data; // Giữ nguyên nếu không chuyển thành số được
-            }
-            console.log(`- ${message}: ${numericData}`);
-          });
-          this.message = 'Game joined successfully! Check console for debug logs.';
-        } else {
-          this.message = 'Game joined, but no DebugFHE events found.';
-        }
+        this.dialogLoading = false;
+        this.dialogRequestDecryption = true;
       } catch (error) {
         this.message = 'Failed to join game';
+        this.dialogLoading = false;
         console.error('Join game error:', error);
         if (error.data) {
           console.error('Error data:', error.data);
@@ -393,44 +398,20 @@ export default {
       }
     },
 
-    async revealAndGetResult(gameId) {
+    async requestPayout(gameId) {
+      // Kết nối với smart contract
+      this.dialogLoading = true;
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
-      const ciphertextHandle = '0x59573f986e594fd35e77d341aca13b22053eb3871dff0000000000aa36a70200';
-      const keypair = this.instance.generateKeypair();
-
-      // 4. Chuẩn bị request EIP-712
-      const startTimeStamp = Math.floor(Date.now() / 1000).toString();
-      const durationDays = "10";
-      const contractAddresses = [this.contractAddress];
-      const contractAddress = this.contractAddress;
-      const eip712 = this.instance.createEIP712(
-        keypair.publicKey,
-        contractAddresses,
-        startTimeStamp,
-        durationDays
-      );
-
-      const signature = await signer.signTypedData(
-        eip712.domain,
-        {UserDecryptRequestVerification: eip712.types.UserDecryptRequestVerification},
-        eip712.message
-      );
-      // 5. Gọi userDecrypt
-      const result = await this.instance.userDecrypt(
-        [{handle: ciphertextHandle, contractAddress}],
-        keypair.privateKey,
-        keypair.publicKey,
-        signature.replace("0x", ""),
-        contractAddresses,
-        signer.address,
-        startTimeStamp,
-        durationDays
-      );
-
-      const decryptedValue = result[ciphertextHandle];
-      console.log("Giá trị giải mã:", decryptedValue);
-      return decryptedValue;
+      const contract = new ethers.Contract(this.contractAddress, contractABI, signer);
+      const tx = await contract.requestDecryptionAndPayout(gameId);
+      console.log('Transaction sent:', tx.hash);
+      const receipt = await tx.wait();
+      this.dialogLoading = false;
+      this.dialogRequestDecryption = false;
+      this.message = 'Transaction sent:', receipt.transactionHash;
+      this.snackbar = true;
+      console.log('Transaction confirmed:', receipt);
     },
 
     amountUp(multiplier) {
@@ -445,24 +426,10 @@ export default {
       this.opponentChoice = null;
     },
 
-    play() {
-      if (this.intervalId) {
-        return;
-      }
-      let index = 0;
-      this.intervalId = setInterval(() => {
-        this.opponentChoice = this.options[index % this.options.length];
-        index++;
-      }, 300);
-
-      // Sau 2s thì dừng và chọn kết quả thật sự
-      setTimeout(() => {
-        clearInterval(this.intervalId);
-        this.intervalId = null;
-        this.opponentChoice =
-          this.options[Math.floor(Math.random() * this.options.length)];
-      }, 2000);
+    disconnectWallet() {
+      this.userAddress = null
     },
+
   },
   beforeUnmount() {
     if (this.intervalId) clearInterval(this.intervalId);

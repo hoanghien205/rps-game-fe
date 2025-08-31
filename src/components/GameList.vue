@@ -7,7 +7,7 @@
       <thead>
       <tr class="bg-amber">
         <th class="text-left">
-          Game ID {{ gameId }}
+          Game ID
         </th>
         <th class="text-left">
           Player 1
@@ -93,7 +93,7 @@ const props = defineProps({
   contractAddress: {
     type: String,
     required: true
-  },
+  }
 })
 const emit = defineEmits(['update:gameId', 'CreateGame']);
 
@@ -105,6 +105,8 @@ function convertDate(i) {
 
 function selectGameId(element) {
   emit('update:gameId', element.id);
+  document.getElementById("GameDetailEL")
+    ?.scrollIntoView({ behavior: "smooth" });
 }
 
 function onChoice(element) {
@@ -151,6 +153,11 @@ function createGame() {
   emit('CreateGame', playerChoice);
 }
 
+
+function closeCreateDialog() {
+  dialog.value = false;
+}
+defineExpose({ closeCreateDialog })
 onMounted(() => {
   getGameList();
 })
