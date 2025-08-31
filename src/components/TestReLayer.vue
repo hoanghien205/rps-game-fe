@@ -20,9 +20,15 @@ Lose: Your bet goes to your opponent. -->
   <div class="app-container">
     <!-- Header -->
     <header class="header">
-      <div class="logo">ZamaRPS</div>
-      <nav class="nav">
-        <span>Connect</span>
+      <div class="logo bg-blue-lighten-2">
+        <img alt="" src="@/assets/logo.png">
+      </div>
+      <nav class="nav pa-4">
+        <v-btn v-if=!userAddress>Connect</v-btn>
+        <div v-if="userAddress">
+          <span class="mr-2">{{shortAddress(userAddress)}}</span>
+          <v-icon class="cursor-pointer" color="deep-orange-darken-1">mdi-close</v-icon>
+        </div>
       </nav>
     </header>
 
@@ -297,6 +303,11 @@ export default {
       }
     },
 
+    shortAddress(addr) {
+    if (!addr) return ''
+    return addr.slice(0, 6) + '...' + addr.slice(-4)
+    },
+
     async joinGame() {
       if (!this.instance || !this.playerChoice || !this.userAddress) {
         this.message = 'SDK not initialized, no choice selected, or no user address!';
@@ -483,6 +494,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 16px;
 }
 
 
@@ -495,6 +507,11 @@ export default {
 .logo {
   font-size: 1.5em;
   font-weight: bold;
+  boder-radius: 16px;
+  img {
+    border-top-left-radius: 16px;
+    width: 64px;
+  }
 }
 
 .nav {
