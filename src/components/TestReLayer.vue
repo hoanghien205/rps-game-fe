@@ -26,29 +26,27 @@ Lose: Your bet goes to your opponent. -->
       <nav class="nav pa-4">
         <v-btn v-if=!userAddress @click="initialize">Connect</v-btn>
         <div v-if="userAddress">
-          <span class="mr-2">{{shortAddress(userAddress)}}</span>
+          <span class="mr-2">{{ shortAddress(userAddress) }}</span>
           <v-icon class="cursor-pointer" color="deep-orange-darken-1" @click="disconnectWallet">mdi-close</v-icon>
         </div>
       </nav>
     </header>
 
     <!-- Main Content -->
-    <GameList v-model:gameId="gameId"
-              :contractAddress="contractAddress"
-              @CreateGame="createGame($event)"
-              />
     <main class="main">
       <div class="game-container">
         <!-- Left Panel: Game Controls -->
-        <div class="game-controls" v-if="gameId" id="GameDetailEL">
-          <h1>Game ID: {{ gameId }}</h1>
+        <!-- <div class="game-controls" v-if="gameId" id="GameDetailEL"> -->
+        <div class="game-controls" id="GameDetailEL">
+
+          <h1>Room: {{ gameId }}</h1>
           <!-- <button class="play-button">Let's play!</button> -->
           <div class="game-container-2">
             <div class="amount-section">
 
               <div>
                 <h3>Bet size</h3>
-                <input type="number" v-model="bet" value="0.001"/>
+                <input type="number" v-model="bet" value="0.001" />
                 <button class="amount-btn" @click="amountUp(1)">1x</button>
                 <button class="amount-btn" disabled @click="amountUp(2)">2x</button>
                 <button class="amount-btn" disabled @click="amountUp(3)">3x</button>
@@ -58,22 +56,22 @@ Lose: Your bet goes to your opponent. -->
               <div class="choices-section">
                 <h3>Your Choice</h3>
                 <div class="choices">
-                  <button class="choice-btn"  :class="{ selected: playerChoice === '1' }" data-choice="1" @click="onChoice('1')">
-                    <img alt="" src="@/assets/game/rock-btn.webp"/>
-                    <span class="font-weight-bold text-h6">Rock</span>
+                  <button class="choice-btn" data-choice="1" @click="onChoice('1')">
+                    <img alt="" src="@/assets/game/rock-btn.webp" :class="{ selected: playerChoice === '1' }" />
+                    <span class="font-weight-bold">Rock</span>
                   </button>
-                  <button class="choice-btn"  :class="{ selected: playerChoice === '2' }" data-choice="2" @click="onChoice('2')">
-                    <img alt="" src="@/assets/game/paper-btn.webp"/>
-                    <span class="font-weight-bold text-h6">Paper</span>
+                  <button class="choice-btn" data-choice="2" @click="onChoice('2')">
+                    <img alt="" src="@/assets/game/paper-btn.webp" :class="{ selected: playerChoice === '2' }" />
+                    <span class="font-weight-bold">Paper</span>
                   </button>
-                  <button class="choice-btn" :class="{ selected: playerChoice === '3' }" data-choice="3" @click="onChoice('3')">
-                    <img alt="" src="@/assets/game/scissors-btn.webp"/>
-                    <span class="font-weight-bold text-h6">Scissors</span>
+                  <button class="choice-btn" data-choice="3" @click="onChoice('3')">
+                    <img alt="" src="@/assets/game/scissors-btn.webp" :class="{ selected: playerChoice === '3' }" />
+                    <span class="font-weight-bold">Scissors</span>
                   </button>
                 </div>
               </div>
 
-              <img alt="" class="play-btn" src="@/assets/game/submit-btn.webp" @click="joinGame()"/>
+              <img alt="" class="play-btn" src="@/assets/game/submit-btn.webp" @click="joinGame()" />
 
               <div class="winnings">
                 <span>Your Winnings:</span>
@@ -83,14 +81,18 @@ Lose: Your bet goes to your opponent. -->
 
 
             <div class="game-visual">
-              <img v-if="playerChoice" :key="playerChoice" :src="images[playerChoice]" :alt="playerChoice"/>
+              <img v-if="playerChoice" :key="playerChoice" :src="images[playerChoice]" :alt="playerChoice" />
               <span class="vs" v-if="playerChoice && opponentChoice">VS</span>
               <transition name="fade" mode="out-in">
-                <img v-if="opponentChoice" :key="opponentChoice" :src="images[opponentChoice]" :alt="opponentChoice"/>
+                <img v-if="opponentChoice" :key="opponentChoice" :src="images[opponentChoice]" :alt="opponentChoice" />
               </transition>
             </div>
-
+            <div class="game-visual">
+              <GameList v-model:gameId="gameId" :contractAddress="contractAddress" @CreateGame="createGame($event)" />
+            </div>
           </div>
+
+
         </div>
 
 
@@ -102,22 +104,22 @@ Lose: Your bet goes to your opponent. -->
             <div class="game-history">
               <table>
                 <thead>
-                <tr>
-                  <th>Game ID</th>
-                  <th>Bet Amount</th>
-                  <th>Created At</th>
-                  <th>Action</th>
-                </tr>
+                  <tr>
+                    <th>Game ID</th>
+                    <th>Bet Amount</th>
+                    <th>Created At</th>
+                    <th>Action</th>
+                  </tr>
                 </thead>
                 <tbody>
-                <tr v-for="item in gameHistory">
-                  <td>{{ item.gameId }}</td>
-                  <td>{{ item.amount }}</td>
-                  <td>{{ item.date }}</td>
-                  <td>
+                  <tr v-for="item in gameHistory">
+                    <td>{{ item.gameId }}</td>
+                    <td>{{ item.amount }}</td>
+                    <td>{{ item.date }}</td>
+                    <td>
                       <v-btn color="purple-accent-2">Result</v-btn>
-                  </td>
-                </tr>
+                    </td>
+                  </tr>
                 </tbody>
               </table>
 
@@ -131,20 +133,20 @@ Lose: Your bet goes to your opponent. -->
             <div class="game-history">
               <table>
                 <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Address</th>
-                  <th>Total Bets</th>
-                  <th>Rewards</th>
-                </tr>
+                  <tr>
+                    <th>#</th>
+                    <th>Address</th>
+                    <th>Total Bets</th>
+                    <th>Rewards</th>
+                  </tr>
                 </thead>
                 <tbody>
-                <tr v-for="player in leaderboard" :class="`rank-${player.rank}`">
-                  <td>{{ player.rank }}</td>
-                  <td>{{ player.player }}</td>
-                  <td>{{ player.total }}</td>
-                  <td>{{ player.rewards }}</td>
-                </tr>
+                  <tr v-for="player in leaderboard" :class="`rank-${player.rank}`">
+                    <td>{{ player.rank }}</td>
+                    <td>{{ player.player }}</td>
+                    <td>{{ player.total }}</td>
+                    <td>{{ player.rewards }}</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -155,11 +157,7 @@ Lose: Your bet goes to your opponent. -->
   </div>
 
   <v-overlay v-model="dialogLoading" class="loading-overlay">
-    <v-progress-circular
-      color="primary"
-      indeterminate
-      size="x-large"
-    ></v-progress-circular>
+    <v-progress-circular color="primary" indeterminate size="x-large"></v-progress-circular>
   </v-overlay>
 
   <v-dialog v-model="dialogRequestDecryption" max-width="400" persistent>
@@ -178,17 +176,11 @@ Lose: Your bet goes to your opponent. -->
       </v-card-actions>
     </v-card>
   </v-dialog>
-  <v-snackbar
-    v-model="snackbar"
-  >
-   {{message}}
+  <v-snackbar v-model="snackbar">
+    {{ message }}
 
     <template v-slot:actions>
-      <v-btn
-        color="pink"
-        variant="text"
-        @click="snackbar = false"
-      >
+      <v-btn color="pink" variant="text" @click="snackbar = false">
         Close
       </v-btn>
     </template>
@@ -196,10 +188,10 @@ Lose: Your bet goes to your opponent. -->
 </template>
 
 <script>
-import {initializeRelayerSDK} from '../utils/relayer-sdk';
-import {ethers, parseEther} from 'ethers';
+import { initializeRelayerSDK } from '../utils/relayer-sdk';
+import { ethers, parseEther } from 'ethers';
 import contractABI from "@/abi/RockPaperScissorsABI.json";
-import {ref} from "vue";
+import { ref } from "vue";
 import rockImg from "@/assets/game/rock-btn.webp";
 import paperImg from "@/assets/game/paper-btn.webp";
 import scissorsImg from "@/assets/game/scissors-btn.webp";
@@ -207,7 +199,7 @@ import GameList from "@/components/GameList.vue";
 
 export default {
   name: 'TestReLayer',
-  components: {GameList},
+  components: { GameList },
   data() {
     return {
       message: 'Not initialized',
@@ -219,25 +211,16 @@ export default {
       gameId: null,
       contractAddress: '0x8178ee3F90F08011370671Fd082Df390C648ecb2',
       gameHistory: [
-        {gameId: 1, amount: 0.001, date: '8/29/2025'},
-        {gameId: 2, amount: 0.001, date: '8/31/2025'},
-        {gameId: 3, amount: 0.001, date: '8/31/2025'},
-        {gameId: 4, amount: 0.001, date: '8/31/2025'},
-        {gameId: 5, amount: 0.001, date: '8/31/2025'},
+        { gameId: 1, amount: 0.001, date: '8/29/2025' },
+        { gameId: 2, amount: 0.001, date: '8/31/2025' },
+        { gameId: 3, amount: 0.001, date: '8/31/2025' },
+        { gameId: 4, amount: 0.001, date: '8/31/2025' },
+        { gameId: 5, amount: 0.001, date: '8/31/2025' },
       ],
       leaderboard: [
-        {rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8},
-        {rank: 2, player: "0x37...7778", total: 200, rewards: 19.4},
-        {rank: 3, player: "0x37...7779", total: 190, rewards: -19.4},
-        {rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8},
-        {rank: 2, player: "0x37...7778", total: 200, rewards: 19.4},
-        {rank: 3, player: "0x37...7779", total: 190, rewards: -19.4},
-        {rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8},
-        {rank: 2, player: "0x37...7778", total: 200, rewards: 19.4},
-        {rank: 3, player: "0x37...7779", total: 190, rewards: -19.4},
-        {rank: 1, player: "0x37...7777", total: 2000, rewards: 38.8},
-        {rank: 2, player: "0x37...7778", total: 200, rewards: 19.4},
-        {rank: 3, player: "0x37...7779", total: 190, rewards: -19.4},
+        { rank: 1, player: "0x37...9427", total: 2000, rewards: 38.8 },
+        { rank: 2, player: "0x12...1bn8", total: 200, rewards: 19.4 },
+        { rank: 3, player: "0x6b...7zv9", total: 190, rewards: 12.4 },
 
       ],
       bet: 0.001,
@@ -261,7 +244,7 @@ export default {
         return;
       }
       try {
-        const {instance, userAddress} = await initializeRelayerSDK();
+        const { instance, userAddress } = await initializeRelayerSDK();
         this.instance = instance;
         this.userAddress = userAddress;
         console.log('User address set:', this.userAddress);
@@ -303,7 +286,7 @@ export default {
 
         const betAmount = parseEther("0.001");
         this.dialogLoading = false;
-        const tx = await contract.createGame(inputChoiceHex, inputProofHex, {value: betAmount});
+        const tx = await contract.createGame(inputChoiceHex, inputProofHex, { value: betAmount });
         console.log('Transaction sent:', tx.hash);
 
         const receipt = await tx.wait();
@@ -334,8 +317,8 @@ export default {
     },
 
     shortAddress(addr) {
-    if (!addr) return ''
-    return addr.slice(0, 6) + '...' + addr.slice(-4)
+      if (!addr) return ''
+      return addr.slice(0, 6) + '...' + addr.slice(-4)
     },
 
     async joinGame() {
@@ -456,7 +439,8 @@ export default {
 }
 
 .header {
-  width: 100%;
+  width: calc(100% + 40px);
+  margin-top: -20px;
   background-color: #FFD208;
   display: flex;
   justify-content: space-between;
@@ -466,15 +450,17 @@ export default {
 
 
 .selected {
-  filter: brightness(1.3);
+  /* filter: brightness(1.3);
   border: 2px solid #ffd700;
-  border-radius: 4px;
+  border-radius: 4px; */
+  box-shadow: 0 0 20px rgba(255, 225, 0, 0.9);
 }
 
 .logo {
   font-size: 1.5em;
   font-weight: bold;
   boder-radius: 16px;
+
   img {
     border-top-left-radius: 16px;
     width: 64px;
@@ -556,11 +542,10 @@ export default {
 }
 
 .game-container-2 {
-  padding: 20px;
   border-radius: 10px;
   display: flex;
   flex-direction: row;
-  gap: 20px;
+  gap: 8px;
 }
 
 .game-container-3 {
@@ -606,7 +591,7 @@ export default {
 
 .amount-section {
   margin-bottom: 15px;
-  width: 40%;
+  width: 30%;
 }
 
 .amount-section label {
@@ -657,15 +642,16 @@ export default {
 .choice-btn {
   /* background: linear-gradient(145deg, #2c2c2c, #1a1a1a); */
   transition: transform 0.2s ease, box-shadow 0.3s ease;
-  width: 100px;
+  /* width: 100px; */
 }
 
 .choice-btn img {
   width: 100%;
+  border-radius: 4px;
   /* height: 76%; */
 }
 
-.choice-btn:hover {
+.choice-btn img:hover {
   transform: scale(1.1);
   box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
 }
@@ -680,7 +666,7 @@ export default {
 }
 
 .game-visual {
-  width: 60%;
+  width: 35%;
   align-items: center;
   display: flex;
   justify-content: space-around;
