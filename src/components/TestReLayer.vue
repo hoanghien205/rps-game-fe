@@ -24,7 +24,7 @@ Lose: Your bet goes to your opponent. -->
         <img alt="" src="@/assets/logo.png">
       </div>
       <nav class="nav pa-4">
-        <v-btn v-if=!userAddress @click="initialize">Connect</v-btn>
+        <v-btn v-if=!userAddress @click="initialize" class="connect-btn">Connect</v-btn>
         <div v-if="userAddress">
           <span class="mr-2">{{ shortAddress(userAddress) }}</span>
           <v-icon class="cursor-pointer" color="deep-orange-darken-1" @click="disconnectWallet">mdi-close</v-icon>
@@ -39,7 +39,7 @@ Lose: Your bet goes to your opponent. -->
         <!-- <div class="game-controls" v-if="gameId" id="GameDetailEL"> -->
         <div class="game-controls" id="GameDetailEL">
 
-          <h1 v-if="!gameId">Join or create new game</h1>
+          <h1 v-if="!gameId" class="shake-text">Join or create new game!!!</h1>
 
           <h1 v-else>Room: {{ gameId }}</h1>
 
@@ -49,11 +49,11 @@ Lose: Your bet goes to your opponent. -->
 
               <div>
                 <h3>Bet size</h3>
-                <input type="number" v-model="bet" value="0.001" :min="0.001" step="0.001" />
-                <div class="ma-3 gap-2">
-                  <button class="amount-btn amount-glow" @click="amountUp(1)">1x</button>
-                  <button class="amount-btn amount-glow" @click="amountUp(5)">5x</button>
-                  <button class="amount-btn amount-glow" @click="amountUp(10)">10x</button>
+                <input type="number" v-model="bet" value="0.001" :min="0.001" step="0.001" class="bet-input"/>
+                <div>
+                  <button class="amount-btn" @click="amountUp(1)">1x</button>
+                  <button class="amount-btn" @click="amountUp(5)">5x</button>
+                  <button class="amount-btn" @click="amountUp(10)">10x</button>
                   <!-- <button class="amount-btn" @click="amountUp(1)">max</button> -->
                 </div>
               </div>
@@ -278,7 +278,7 @@ Lose: Your bet goes to your opponent. -->
 .nav span {
   position: relative;
   cursor: pointer;
-  background: linear-gradient(90deg, #2D2D44, #e52e71, #6a5acd);
+  background: linear-gradient(90deg, #002133, #e52e71, #6a5acd);
   background-size: 300% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -292,7 +292,7 @@ Lose: Your bet goes to your opponent. -->
   bottom: -5px;
   height: 3px;
   width: 100%;
-  background: linear-gradient(90deg, #2D2D44, #e52e71, #6a5acd);
+  background: linear-gradient(90deg, #002133, #e52e71, #6a5acd);
   background-size: 300% 100%;
   transform: scaleX(0);
   transform-origin: right;
@@ -329,7 +329,7 @@ Lose: Your bet goes to your opponent. -->
 
 .main {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1600px;
   margin-top: 20px;
 }
 
@@ -354,10 +354,18 @@ Lose: Your bet goes to your opponent. -->
   display: flex;
   flex-direction: row;
   gap: 20px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
 }
 
 .game-result-history {
   width: 50%;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 }
 
 .game-controls {
@@ -400,24 +408,26 @@ Lose: Your bet goes to your opponent. -->
   margin-bottom: 5px;
 }
 
-.amount-section input {
-  width: 100%;
-  padding: 10px;
-  background-color: white;
+.connect-btn{
+  padding: 10px 8px;
+  background-color: #002133;
+  color: white;
   border: none;
-  border-radius: 5px;
-  margin-bottom: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
 }
 
 .amount-btn {
   padding: 10px 8px;
-  background-color: #2d2d44;
+  background-color: #002133;
   color: white;
   border: none;
   border-radius: 50%;
-  margin-right: 10px;
+  margin-right: 24px;
   cursor: pointer;
   width: 60px;
+  font-weight: 600;
 }
 
 .amount-btn:hover {
@@ -460,6 +470,10 @@ Lose: Your bet goes to your opponent. -->
   gap: 48px;
   width: 100%;
   margin-top: 16px;
+
+  @media (max-width: 768px) {
+    gap: 12px;
+  }
 }
 
 .choice-btn {
@@ -488,6 +502,45 @@ Lose: Your bet goes to your opponent. -->
 .choice img {
   width: 60%;
   margin: auto;
+}
+
+.bet-input {
+  width: 100%;
+  font-size: 32px;
+  font-weight: bold;
+  text-align: center;
+  margin: 16px 0px;
+  color: #ffd208;
+  background: #002133;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+/* Hiệu ứng khi hover */
+.bet-input:hover {
+  box-shadow: 0 6px 16px rgba(0, 123, 255, 0.5);
+  transform: scale(1.05);
+}
+
+/* Hiệu ứng khi focus */
+.bet-input:focus {
+  background: linear-gradient(135deg, #0056cc, #00b8ff);
+  box-shadow: 0 6px 20px rgba(0, 123, 255, 0.6);
+}
+
+/* Ẩn nút tăng giảm của input number */
+.bet-input::-webkit-outer-spin-button,
+.bet-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.bet-input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
 }
 
 .winnings {
@@ -601,6 +654,49 @@ Lose: Your bet goes to your opponent. -->
 .loading-overlay {
   left: 50%;
   top: 50%;
+}
+
+@media (max-width: 768px) {
+  .game-container-2 {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .amount-section, .game-visual {
+    width: 100% !important;
+    margin-left: 0px !important;
+  }
+}
+
+.highlight-text {
+  font-weight: bold;
+  color: #ff9800; /* màu cam nổi bật */
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    text-shadow: 0 0 8px rgba(255, 152, 0, 0.8);
+  }
+  50% {
+    opacity: 0.7;
+    text-shadow: 0 0 16px rgba(255, 152, 0, 1);
+  }
+}
+
+.shake-text {
+  font-weight: bold;
+  color: #002133;
+  animation: shake 1s infinite;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-2px); }
+  40% { transform: translateX(2px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
 }
 </style>
 

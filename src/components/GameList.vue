@@ -1,33 +1,19 @@
 <template>
   <v-card width="100%" :loading="tableLoading">
-    <v-table>
-      <thead>
-        <tr class="shadow-1">
-          <th class="text-left">
-            Room
-          </th>
-          <th class="text-left">
-            Player 1
-          </th>
-          <!-- <th class="text-left">
-            Created At
-          </th> -->
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="item in gameList" :key="item.name">
-          <td>{{ item.id }}</td>
-          <td>{{ item.player1.slice(0, 6) }}...{{ item.player1.slice(-5) }}</td>
-          <!-- <td>{{ convertDate(item.createdAt) }}</td> -->
-          <td>
-            <v-btn color="green" @click="selectGameId(item)">Join</v-btn>
-          </td>
-        </tr>
-      </tbody>
-    </v-table>
+    <v-text-field v-model="search" label="Search by Room ID or Player" prepend-inner-icon="mdi-magnify"
+      variant="outlined" density="compact" clearable class="ma-4" hide-details />
 
-    <div class="btn-box shadow-1">
+    <v-data-table :headers="headers" :items="filteredList" :items-per-page="5" :items-per-page-options="[5]" class="elevation-1 shadow-1">
+      <template #item.player1="{ item }">
+        {{ item.player1.slice(0, 6) }}...{{ item.player1.slice(-5) }}
+      </template>
+
+      <template #item.actions="{ item }">
+        <v-btn color="green" @click="selectGameId(item)">Join</v-btn>
+      </template>
+    </v-data-table>
+
+    <div class="btn-box">
       <div>
         <v-btn size="x-large" @click="getGameList">
           <v-icon class="cursor-pointer">mdi-refresh</v-icon>
@@ -90,12 +76,25 @@
     transform: scale(1.1);
     box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
   }
+
+  @media (max-width: 768px) {
+    button{
+      width: calc(100% - 32px);  
+      margin: 8px 16px;
+    }
+  }
+}
+
+.v-input__details{
+  display: none;
 }
 
 .v-table {
   flex: 1;
   overflow-y: auto;
   max-height: 600px;
+  height: calc(100% - 140px);
+  /* background: transparent; */
 }
 
 .v-table thead {
@@ -130,6 +129,9 @@
 
 .v-card {
   max-width: 1200px;
+  background: transparent;
+  height: 100%;
+  border-radius: 24px;
 }
 
 .choices {
@@ -160,7 +162,12 @@
   font-family: 'Roboto', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   font-size: 14px;
   line-height: 1.5;
-  color: #2c3e50;
+  color: #000000;
+}
+
+.v-dialog .v-card {
+  background-color: #FFD208;
+  border-radius: 8px;
 }
 
 /* Header table */
@@ -191,6 +198,10 @@
   transition: background-color 0.2s ease-in-out;
 }
 
+.v-table .v-data-table-footer .v-data-table-footer__items-per-page {
+  display: none !important;
+}
+
 .v-btn {
   font-family: inherit;
   font-size: 14px;
@@ -207,7 +218,7 @@
 
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { ethers } from "ethers";
 import contractABI from "@/abi/RockPaperScissorsABI.json";
 
@@ -231,9 +242,31 @@ const props = defineProps({
   },
 })
 const playerChoice = ref(props.playerChoice);
+watch(() => props.playerChoice, (val) => {
+  playerChoice.value = val;
+});
+
 const emit = defineEmits(['update:gameId', 'CreateGame']);
 
 const gameList = ref([])
+
+const headers = [
+  { title: "Room", key: "id", align: "start" },
+  { title: "Player", key: "player1" },
+  { title: "", key: "actions", sortable: false },
+];
+
+const search = ref("");
+const filteredList = computed(() => {
+  const keyword = search.value.trim().toLowerCase()
+
+  return gameList.value.filter(item => {
+    const idStr = String(item.id).trim().toLowerCase()
+    const player1Str = String(item.player1).trim().toLowerCase()
+
+    return idStr.includes(keyword) || player1Str.includes(keyword)
+  })
+})
 
 function convertDate(i) {
   return new Date(i * 1000).toLocaleDateString()
