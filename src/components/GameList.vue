@@ -12,7 +12,7 @@
           <!-- <th class="text-left">
             Created At
           </th> -->
-          <th>Action</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -46,23 +46,20 @@
         </v-icon-btn>
       </v-card-title>
       <div class="pa-4 text-center">
-        <div>Bet Amount: 0.001ETH</div>
+        <div>Bet Amount: <b>{{ bet }}</b> ETH</div>
         <div class="py-2">
           Your Choise:
           <div class="choices">
-            <button class="choice-btn" :class="{ selected: playerChoice === '1' }" data-choice="rock"
-              @click="onChoice('1')">
-              <img alt="" src="@/assets/game/rock-btn.webp" />
+            <button class="choice-btn" data-choice="rock" @click="onChoice('1')">
+              <img alt="" src="@/assets/game/rock-btn.webp" :class="{ selected: playerChoice === '1' }" />
               <span class="font-weight-bold text-h6">Rock</span>
             </button>
-            <button class="choice-btn" data-choice="paper" :class="{ selected: playerChoice === '2' }"
-              @click="onChoice('2')">
-              <img alt="" src="@/assets/game/paper-btn.webp" />
+            <button class="choice-btn" data-choice="paper" @click="onChoice('2')">
+              <img alt="" src="@/assets/game/paper-btn.webp" :class="{ selected: playerChoice === '2' }" />
               <span class="font-weight-bold text-h6">Paper</span>
             </button>
-            <button class="choice-btn" data-choice="scissors" :class="{ selected: playerChoice === '3' }"
-              @click="onChoice('3')">
-              <img alt="" src="@/assets/game/scissors-btn.webp" />
+            <button class="choice-btn" data-choice="scissors" @click="onChoice('3')">
+              <img alt="" src="@/assets/game/scissors-btn.webp" :class="{ selected: playerChoice === '3' }" />
               <span class="font-weight-bold text-h6">Scissors</span>
             </button>
           </div>
@@ -216,7 +213,6 @@ import contractABI from "@/abi/RockPaperScissorsABI.json";
 
 const tableLoading = ref(false);
 const dialog = ref(false);
-const playerChoice = ref("1");
 const props = defineProps({
   gameId: {
     type: Number,
@@ -225,8 +221,16 @@ const props = defineProps({
   contractAddress: {
     type: String,
     required: true
-  }
+  },
+  bet: {
+    type: Number,
+  },
+  playerChoice: {
+    type: String,
+    default: '1',
+  },
 })
+const playerChoice = ref(props.playerChoice);
 const emit = defineEmits(['update:gameId', 'CreateGame']);
 
 const gameList = ref([])
