@@ -1,9 +1,10 @@
 <template>
-  <v-card width="100%" :loading="tableLoading">
+  <v-card width="100%">
     <v-text-field v-model="search" label="Search by Room ID or Player" prepend-inner-icon="mdi-magnify"
       variant="outlined" density="compact" clearable class="ma-4" hide-details />
 
-    <v-data-table :headers="headers" :items="filteredList" :items-per-page="5" :items-per-page-options="[5]" class="elevation-1 shadow-1">
+    <v-data-table :headers="headers" :items="filteredList" :items-per-page="5" ref="tableRef"
+      class="elevation-1 shadow-1" :loading="tableLoading" v-model:page="page">
       <template #item.player1="{ item }">
         {{ item.player1.slice(0, 6) }}...{{ item.player1.slice(-5) }}
       </template>
@@ -11,11 +12,19 @@
       <template #item.actions="{ item }">
         <v-btn color="green" @click="selectGameId(item)">Join</v-btn>
       </template>
+
+      <template #bottom>
+        <v-divider></v-divider>
+        <div class="custom-footer">
+          <v-pagination v-model="page" :length="pageCount" color="amber darken-4" rounded="circle"
+            :total-visible="totalVisible"></v-pagination>
+        </div>
+      </template>
     </v-data-table>
 
     <div class="btn-box">
       <div>
-        <v-btn size="x-large" @click="getGameList">
+        <v-btn size="x-large" @click="manualRefresh">
           <v-icon class="cursor-pointer">mdi-refresh</v-icon>
         </v-btn>
         <v-btn size="x-large" @click="dialog = true">Create Game</v-btn>
@@ -78,14 +87,14 @@
   }
 
   @media (max-width: 768px) {
-    button{
-      width: calc(100% - 32px);  
+    button {
+      width: calc(100% - 32px);
       margin: 8px 16px;
     }
   }
 }
 
-.v-input__details{
+.v-input__details {
   display: none;
 }
 
@@ -202,6 +211,11 @@
   display: none !important;
 }
 
+.custom-footer {
+  display: flex;
+  justify-content: center;
+}
+
 .v-btn {
   font-family: inherit;
   font-size: 14px;
@@ -218,7 +232,7 @@
 
 
 <script setup>
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { ethers } from "ethers";
 import contractABI from "@/abi/RockPaperScissorsABI.json";
 
@@ -248,7 +262,35 @@ watch(() => props.playerChoice, (val) => {
 
 const emit = defineEmits(['update:gameId', 'CreateGame']);
 
-const gameList = ref([])
+const gameList = ref([]);
+
+const page = ref(1);
+const pageCount = computed(() => {
+  return Math.ceil(filteredList.value.length / 5);
+});
+
+const totalVisible = ref(5);
+const tableRef = ref(null);
+onMounted(() => {
+  const observer = new ResizeObserver(entries => {
+    for (let entry of entries) {
+      const width = entry.contentRect.width;
+      if (width < 500) {
+        totalVisible.value = 3;
+      } else if (width < 800) {
+        totalVisible.value = 5;
+      } else {
+        totalVisible.value = 7;
+      }
+    }
+  });
+
+  if (tableRef.value) {
+    observer.observe(tableRef.value.$el ?? tableRef.value);
+  }
+
+  onBeforeUnmount(() => observer.disconnect());
+});
 
 const headers = [
   { title: "Room", key: "id", align: "start" },
@@ -274,6 +316,7 @@ function convertDate(i) {
 
 function selectGameId(element) {
   emit('update:gameId', element.id);
+  emit('update:showGameList', false);
   // document.getElementById("GameDetailEL")
   //   ?.scrollIntoView({ behavior: "smooth" });
 }
@@ -308,6 +351,13 @@ async function getGameList() {
         decryptRequestedAt: Number(item[10])
       };
       gameDetails.push(games);
+      // gameDetails.push(games);
+      // gameDetails.push(games);
+      // gameDetails.push(games);
+      // gameDetails.push(games);
+      // gameDetails.push(games);
+      // gameDetails.push(games);
+      // gameDetails.push(games);
     }
     gameList.value = gameDetails;
     tableLoading.value = false;
@@ -315,13 +365,34 @@ async function getGameList() {
     console.log(error);
     tableLoading.value = false;
   }
-
 }
+
+let refreshTimer = null;
+function resetAutoRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+
+  refreshTimer = setInterval(() => {
+    getGameList();
+  }, 7000);
+}
+
+async function manualRefresh() {
+  await getGameList();
+  resetAutoRefresh();
+}
+
+onMounted(() => {
+  getGameList();
+  resetAutoRefresh();
+});
+
+onBeforeUnmount(() => {
+  if (refreshTimer) clearInterval(refreshTimer);
+});
 
 function createGame() {
   emit('CreateGame', playerChoice);
 }
-
 
 function closeCreateDialog() {
   dialog.value = false;

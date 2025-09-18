@@ -49,7 +49,7 @@ Lose: Your bet goes to your opponent. -->
 
               <div>
                 <h3>Bet size</h3>
-                <input type="number" v-model="bet" value="0.001" :min="0.001" step="0.001" class="bet-input"/>
+                <input type="number" v-model="bet" value="0.001" :min="0.001" step="0.001" class="bet-input" />
                 <div>
                   <button class="amount-btn" @click="amountUp(1)">1x</button>
                   <button class="amount-btn" @click="amountUp(5)">5x</button>
@@ -87,13 +87,12 @@ Lose: Your bet goes to your opponent. -->
 
             <!-- Game Visual 1 -->
             <transition name="slide-fade" mode="out-in">
-              <div class="game-visual" v-if="gameId">
+              <div class="game-visual" v-if="gameId" :class="{ 'full-width': !showGameList }">
                 <!-- Nếu chưa chọn -->
                 <h1 v-if="!playerChoice" class="hint">
                   Please choose Rock, Paper, or Scissors
                 </h1>
 
-                <!-- Nếu đã chọn -->
                 <div v-else class="choice">
                   <img v-if="playerChoice" :key="playerChoice" :src="images[playerChoice]" :alt="playerChoice" />
 
@@ -104,12 +103,19 @@ Lose: Your bet goes to your opponent. -->
                   </transition>
                 </div>
 
+                <span v-if="gameId" @click="toggleGameList" class="toggle-btn" color="blue">
+                  <v-icon size="24">
+                    {{ showGameList ? 'mdi-chevron-right' : 'mdi-chevron-left' }}
+                  </v-icon>
+                </span>
 
+                <v-icon v-if="gameId" @click="exitRoom" class="exit-btn">mdi-close</v-icon>
               </div>
             </transition>
 
             <!-- Game Visual 2 -->
-            <div class="game-visual game-visual-2 " :class="{ 'full-width': !gameId, 'partial-width': gameId }">
+            <div class="game-visual game-visual-2 " v-if="(!gameId || showGameList)"
+              :class="{ 'full-width': !gameId, 'partial-width': gameId && showGameList }">
               <GameList v-model:gameId="gameId" :contractAddress="contractAddress" :bet="bet"
                 :playerChoice="playerChoice" @CreateGame="createGame($event)" />
             </div>
@@ -340,6 +346,10 @@ Lose: Your bet goes to your opponent. -->
   display: flex;
   flex-direction: column;
   gap: 20px;
+
+  @media (max-width: 768px) {
+    padding: 0px;
+  }
 }
 
 .game-container-2 {
@@ -387,7 +397,7 @@ Lose: Your bet goes to your opponent. -->
 
 .play-btn {
   width: 100%;
-  color: white;
+  /* color: white; */
   cursor: pointer;
   font-weight: 700;
   font-size: 32px;
@@ -408,7 +418,7 @@ Lose: Your bet goes to your opponent. -->
   margin-bottom: 5px;
 }
 
-.connect-btn{
+.connect-btn {
   padding: 10px 8px;
   background-color: #002133;
   color: white;
@@ -502,6 +512,45 @@ Lose: Your bet goes to your opponent. -->
 .choice img {
   width: 60%;
   margin: auto;
+  max-width: 200px;
+}
+
+.choice img.animating {
+  /* Thay :last-child bằng class 'animating' để dễ kiểm soát, không phụ thuộc vị trí */
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  /* Giữ mượt mà */
+  animation: shake-and-pulse 0.3s infinite;
+  /* Thay spin bằng shake + pulse để "loạn xạ" tự nhiên, đẹp mắt hơn (rung nhẹ và nhịp) */
+}
+
+@keyframes shake-and-pulse {
+  0% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+
+  25% {
+    transform: translateX(-5px) scale(1.05);
+    /* Rung trái và phồng nhẹ */
+    opacity: 0.9;
+  }
+
+  50% {
+    transform: translateX(5px) scale(1);
+    /* Rung phải */
+    opacity: 1;
+  }
+
+  75% {
+    transform: translateX(-3px) scale(1.03);
+    /* Rung nhỏ hơn */
+    opacity: 0.95;
+  }
+
+  100% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
 }
 
 .bet-input {
@@ -540,7 +589,8 @@ Lose: Your bet goes to your opponent. -->
 }
 
 .bet-input[type="number"] {
-  -moz-appearance: textfield; /* Firefox */
+  -moz-appearance: textfield;
+  /* Firefox */
 }
 
 .winnings {
@@ -560,14 +610,59 @@ Lose: Your bet goes to your opponent. -->
   border-radius: 24px;
   margin-left: 24px;
   box-shadow: rgba(50, 50, 105, 0.15) 0px 2px 5px 0px, rgba(0, 0, 0, 0.05) 0px 1px 1px 0px;
+  position: relative;
+
+  h1 {
+    margin: auto;
+  }
 }
 
 .game-visual-2 {
   transition: all 0.4s ease;
 }
 
-.game-visual-2.full-width {
+.full-width {
   width: 70%;
+}
+
+.toggle-btn {
+  position: absolute;
+  top: 24px;
+  right: 0px;
+  z-index: 10;
+  font-weight: 600;
+  font-size: 32px;
+  color: #ffffff;
+  background-color: #d4a017;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  border-radius: 8px 0px 0px 8px;
+  box-shadow: rgba(50, 50, 105, 0.15) 0px 2px 5px 0px, rgba(0, 0, 0, 0.05) 0px 1px 1px 0px;
+  cursor: pointer;
+  padding: 0px 4px;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.exit-btn {
+  position: absolute;
+  top: 24px;
+  left: 0px;
+  z-index: 10;
+  font-weight: 600;
+  font-size: 32px;
+  color: #ffffff;
+  background-color: #d4a017;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  border-radius: 0px 8px 8px 0px;
+  box-shadow: rgba(50, 50, 105, 0.15) 0px 2px 5px 0px, rgba(0, 0, 0, 0.05) 0px 1px 1px 0px;
+  cursor: pointer;
+  padding: 0px 4px;
 }
 
 .vs {
@@ -662,7 +757,8 @@ Lose: Your bet goes to your opponent. -->
     align-items: center;
   }
 
-  .amount-section, .game-visual {
+  .amount-section,
+  .game-visual {
     width: 100% !important;
     margin-left: 0px !important;
   }
@@ -670,15 +766,19 @@ Lose: Your bet goes to your opponent. -->
 
 .highlight-text {
   font-weight: bold;
-  color: #ff9800; /* màu cam nổi bật */
+  color: #ff9800;
+  /* màu cam nổi bật */
   animation: pulse 1.5s infinite;
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
     text-shadow: 0 0 8px rgba(255, 152, 0, 0.8);
   }
+
   50% {
     opacity: 0.7;
     text-shadow: 0 0 16px rgba(255, 152, 0, 1);
@@ -692,11 +792,27 @@ Lose: Your bet goes to your opponent. -->
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-2px); }
-  40% { transform: translateX(2px); }
-  60% { transform: translateX(-2px); }
-  80% { transform: translateX(2px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20% {
+    transform: translateX(-2px);
+  }
+
+  40% {
+    transform: translateX(2px);
+  }
+
+  60% {
+    transform: translateX(-2px);
+  }
+
+  80% {
+    transform: translateX(2px);
+  }
 }
 </style>
 
@@ -747,7 +863,9 @@ export default {
       options: ["1", "2", "3"],
       intervalId: null,
       dialogRequestDecryption: false,
-      snackbar: true
+      snackbar: true,
+      animationInterval: null,
+      showGameList: true,
     };
   },
   methods: {
@@ -761,11 +879,11 @@ export default {
         this.instance = instance;
         this.userAddress = userAddress;
         console.log('User address set:', this.userAddress);
-        this.message = 'SDK initialized successfully!';
+        showMessage('SDK initialized successfully!');
         this.isInitialized = true;
         // this.decrypt();
       } catch (error) {
-        this.message = 'Failed to initialize SDK';
+        showMessage('Failed to initialize SDK');
         console.error('Initialization error:', error);
       }
     },
@@ -773,7 +891,7 @@ export default {
       this.dialogLoading = true;
       const choice = Number(event.value);
       if (!this.instance || !choice || !this.userAddress) {
-        this.message = 'SDK not initialized, no choice selected, or no user address!';
+        showMessage('SDK not initialized, no choice selected, or no user address!');
         this.dialogLoading = false;
         return;
       }
@@ -797,7 +915,7 @@ export default {
         const signer = await provider.getSigner();
         const contract = new ethers.Contract(this.contractAddress, contractABI, signer);
 
-        const betAmount = parseEther(bet);
+        const betAmount = parseEther(this.bet.toString());
         this.dialogLoading = false;
         const tx = await contract.createGame(inputChoiceHex, inputProofHex, { value: betAmount });
         console.log('Transaction sent:', tx.hash);
@@ -817,43 +935,61 @@ export default {
 
         if (event) {
           this.gameId = event.args.gameId.toString();
-          this.message = `Game created successfully! ID: ${this.gameId}`;
-          this.snackbar = true;
+          showMessage(`Game created successfully! ID: ${this.gameId}`);
+          this.showGameList = false;
         } else {
-          this.message = 'Game created, but could not retrieve game ID';
+          showMessage('Game created, but could not retrieve game ID');
         }
       } catch (error) {
-        this.message = 'Failed to create game';
+        showMessage('Failed to create game');
         this.dialogLoading = false;
         console.error('Create game error:', error);
       }
     },
 
-    shortAddress(addr) {
-      if (!addr) return ''
-      return addr.slice(0, 6) + '...' + addr.slice(-4)
-    },
+    // async joinGame() { // fake
+    //   if (!this.playerChoice) {
+    //     showMessage('Please select a choice first!';
+    //     return;
+    //   }
+
+    //   try {
+    //     this.startOpponentAnimation(); // Bắt đầu animation
+
+    //     // Fake chờ 3 giây để kiểm tra animation (thay vì gọi contract thật)
+    //     await new Promise(resolve => setTimeout(resolve, 3000));
+
+    //     this.stopOpponentAnimation(); // Dừng animation sau khi "hoàn tất"
+    //     this.dialogRequestDecryption = true; // Hiển thị dialog như thật
+    //     showMessage('Fake join game completed! Check animation.';
+    //     this.snackbar = true;
+    //   } catch (error) {
+    //     showMessage('Fake join game failed';
+    //     this.stopOpponentAnimation();
+    //     console.error('Fake error:', error);
+    //   }
+    // },
 
     async joinGame() {
       if (!this.instance || !this.playerChoice || !this.userAddress) {
-        this.message = 'SDK not initialized, no choice selected, or no user address!';
+        showMessage('SDK not initialized, no choice selected, or no user address!');
         return;
       }
 
       if (!ethers.isAddress(this.contractAddress)) {
-        this.message = 'Invalid contract address!';
+        showMessage('Invalid contract address!');
         return;
       }
 
       // Kiểm tra giá trị choice
       if (![1, 2, 3].includes(parseInt(this.playerChoice))) {
-        this.message = 'Invalid choice! Must be 1 (Rock), 2 (Paper), or 3 (Scissors)';
+        showMessage('Invalid choice! Must be 1 (Rock), 2 (Paper), or 3 (Scissors)');
         console.error(this.message);
         return;
       }
 
       try {
-        this.dialogLoading = true;
+        this.startOpponentAnimation();
         const toHex = (u8arr) =>
           '0x' + [...u8arr].map((x) => x.toString(16).padStart(2, '0')).join('');
         console.log('Encrypting choice:', this.playerChoice);
@@ -873,7 +1009,8 @@ export default {
         const contract = new ethers.Contract(this.contractAddress, contractABI, signer);
 
         // Gọi joinGame với gasLimit cao
-        const betAmount = parseEther("0.001"); // 0.001 ETH
+        // const betAmount = parseEther("0.001"); // 0.001 ETH
+        const betAmount = parseEther(this.bet.toString());
         const tx = await contract.joinGame(this.gameId, inputChoiceHex, inputProofHex, {
           value: betAmount,
         });
@@ -882,11 +1019,11 @@ export default {
         // Chờ giao dịch hoàn tất và phân tích log
         const receipt = await tx.wait();
         console.log('Transaction confirmed:', receipt.transactionHash);
-        this.dialogLoading = false;
+        this.stopOpponentAnimation();
         this.dialogRequestDecryption = true;
       } catch (error) {
-        this.message = 'Failed to join game';
-        this.dialogLoading = false;
+        showMessage('Failed to join game');
+        this.stopOpponentAnimation();
         console.error('Join game error:', error);
         if (error.data) {
           console.error('Error data:', error.data);
@@ -905,8 +1042,7 @@ export default {
       const receipt = await tx.wait();
       this.dialogLoading = false;
       this.dialogRequestDecryption = false;
-      this.message = 'Transaction sent:', receipt.transactionHash;
-      this.snackbar = true;
+      showMessage('Transaction sent:', receipt.transactionHash);
       console.log('Transaction confirmed:', receipt);
     },
 
@@ -927,7 +1063,52 @@ export default {
       this.userAddress = null
     },
 
+    shortAddress(addr) {
+      if (!addr) return ''
+      return addr.slice(0, 6) + '...' + addr.slice(-4)
+    },
+
+    startOpponentAnimation() {
+      if (this.animationInterval) return;
+      this.opponentChoice = this.options[Math.floor(Math.random() * this.options.length)];
+      this.animationInterval = setInterval(() => {
+        this.opponentChoice = this.options[Math.floor(Math.random() * this.options.length)];
+        this.$nextTick(() => {
+          const opponentImg = document.querySelector('.choice img:last-child');
+          if (opponentImg) opponentImg.classList.add('animating');
+        });
+      }, 200);
+    },
+
+    stopOpponentAnimation() {
+      if (this.animationInterval) {
+        clearInterval(this.animationInterval);
+        this.animationInterval = null;
+      }
+      this.opponentChoice = null;
+      const opponentImg = document.querySelector('.choice img:last-child');
+      if (opponentImg) opponentImg.classList.remove('animating');
+    },
+
+    toggleGameList() {
+      this.showGameList = !this.showGameList;
+    },
+
+    exitRoom() {
+      this.gameId = null;
+      this.playerChoice = null;
+      this.opponentChoice = null;
+      showMessage('Exited the room successfully!');
+      this.stopOpponentAnimation();
+      this.showGameList = true;
+    },
   },
+
+  showMessage(value) {
+    this.message = value;
+    this.snackbar = true;
+  },
+
   beforeUnmount() {
     if (this.intervalId) clearInterval(this.intervalId);
   },
